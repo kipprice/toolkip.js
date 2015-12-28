@@ -36,12 +36,14 @@ KIP.Objects.Drawable.prototype.AppendChild = function (child, parent, position) 
   if (!position && (position !== 0)) {
     position = this.children.length;
   }
-	
-	// Set the appropriate parent
-	parent = parent || this.div;
 
-	// Save the data into our array
-  this.children.splice(position, 0, {child: child, parent: parent});
+  // Only allow the child to be added if it is also a drawable
+  if (!child.Draw) return;
+
+  this.children.splice(position, 0, child);
+
+  // Set the parent pre-emptively here
+  this.children[position].parent = parent || this.div;
 };
 
 /**
@@ -53,9 +55,6 @@ KIP.Objects.Drawable.prototype.RemoveChild = function (child) {
   "use strict";
 
   var idx;
-	
-	// Quit if child is nothing
-	if (!child) return false;
 
   // Return false if we don't have any children to remove
   if (!this.children) {
@@ -65,44 +64,17 @@ KIP.Objects.Drawable.prototype.RemoveChild = function (child) {
   // Remove the child from our children array
   for (idx = 0; idx < this.children.length; idx += 1) {
     if (this.children[idx] === child) {
-      if (this.RemoveChildByIdx(idx)) {
-				return child;
-			}
-		}
-	}
-	
-	// If we got this far, we must have failed to find anything
-	return false;
-};
+      this.children.splice(idx, 1);
+    }
+  }
 
-/**
- * Removes a child by its index from a Drawable
- * @param {number} idx - The index to remove from our array
- * @param {boolean} 
-KIP.Objects.Drawable.prototype.RemoveChildByIdx = function (idx) {
-	"use strict";
-	var child;
-	
-	// Return false if the index is out of bound
-	if ((idx < 0) || (idx > this.children.length)) {
-		return false;		
-	} 
-	
-	child = this.children[idx];
-	this.children.splice(idx, 1);
-
-  // Remove the child from its parent if it's a regular div
+  // Remove the child from its parent too
   if (child.parentNode) {
     child.parentNode.removeChild(child);
   }
-	
-	// Otherwsie, call the erase function
-	if (child.Draw) {
-		child.Erase();
-	}
 
   return true;
-}
+};
 
 /**
  * Draws the elements for this {@link KIP.Objects.Drawable}
@@ -137,17 +109,9 @@ KIP.Objects.Drawable.prototype.Draw = function (parent, noErase) {
   // If we have any children, loop through them too
   if (!this.children) return;
   this.children.map(function (elem, idx, arr) {
-    if (elem.child) {
-			
-			// Draw it if it's a Drawable
-			if (elem.child.Draw) {
-      	elem.child.Draw(elem.parent);
-				
-			// Otherwise, just add to the parent
-    	} else {
-				elem.parent.appendChild(elem.child);
-			}
-		}
+    if (elem) {
+      elem.Draw();
+    }
   });
 
   // Call the shell function in case a child has overridden it
