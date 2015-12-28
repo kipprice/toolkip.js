@@ -1,24 +1,20 @@
 /*globals KIP*/
-/**
- * @file Helper functions for trigonometric transforms
+/*************************************************************
+ * Helper functions for trigonometric transforms
  * @author Kip Price
  * @version 1.1
  * @since v1.0
- */
+ ************************************************************/
 
-/**
+/******************************************************
  * Draws a line between two specified points
  *
- * @param {Object} start - The start point of the line
- * @param {Number} start.x - The starting x position of the line
- * @param {Number} start.y - The starting y position of the line
- * @param {Object} end - The end point of the line
- * @param {Number} end.x - The ending x position of the line
- * @param {Number} end.y - The ending y position of the line
- * @param {HTMLElement} host - The parent element to draw this line on
+ * @param {obj} start Point object with keys "x" and "y"; represents the start point
+ * @param {obj} end   Point object with keys "x" and "y"; represents the end point
+ * @param {HTML Element} host  The parent element to draw this line on
  *
- * @return {HTMLElement} The line that is drawn
- */
+ * @return {HTML Element} The line that is drawn
+ ******************************************************/
 KIP.Functions.DrawLine = function (start, end, host) {
 	"use strict";
 	var angle, distance, div;
@@ -45,14 +41,14 @@ KIP.Functions.DrawLine = function (start, end, host) {
 	return div;
 };
 
-/**
+/******************************************************************
  * Draws a line between the two provided elements
  *
- * @param {HTMLElement} start_elem The element to start the line at
- * @param {HTMLElement} end_elem   The element to end the line at
+ * @param {HTML Element} start_elem The element to start the line at
+ * @param {HTML Element} end_elem   The element to end the line at
  *
- * @return {HTMLElement} The line that gets drawn
- */
+ * @return {HTML Element} The line that gets drawn
+ ******************************************************************/
 KIP.Functions.ConnectElements = function (start_elem, end_elem) {
 	"use strict";
 	var start_point, end_point, x_1, x_2, y_1, y_2, parent;
@@ -73,18 +69,14 @@ KIP.Functions.ConnectElements = function (start_elem, end_elem) {
 	return KIP.Functions.DrawLine(start_point, end_point, parent);
 };
 
-/**
+/***************************************************
  * Finds the distance between the two provided points
  *
- * @param {Object} start - The first endpoint of the segment we are measuring
- * @param {Number} start.x - The x position of the first point
- * @param {Number} start.y - The y position of the first point
- * @param {Object} end - The second enpoint of the segment we are measuring
- * @param {Number} end.x - The x position of the second point
- * @param {Number} end.y - The y position of the second point
+ * @param {obj} start An object with the keys "x" and "y" ; represents the start point
+ * @param {obj} end   An object with the keys "x" and "y" ; represents the end point
  *
- * @return {Number} The distance between the two points
- */
+ * @return {long} The distance between the two points
+ ***************************************************/
 KIP.Functions.GetDistance = function (start, end) {
 	"use strict";
 	var distance, dx, dy;
@@ -96,18 +88,14 @@ KIP.Functions.GetDistance = function (start, end) {
 	return distance;
 };
 
-/**
+/************************************************
  * Finds the angle between two points
  *
- * @param {Object} start - The origin point of an angle
- * @param {Number} start.x - The x position of the origin point
- * @param {Number} start.y - The y position of the origin point
- * @param {Object} end - The destination point of an angle
- * @param {Number} end.x - The x position of the end point
- * @param {Number} end.y - The y position of the end point
+ * @param {obj} start An object with the keys "x" and "y"; represents the origin point of the angle
+ * @param {obj} end   An object with the keys "x" and "y"; represents the destination point of the angle
  *
- * @return {Number} The angle (in degrees) between the two points
- */
+ * @return {long} The angle (in degrees) between the two points
+ ************************************************/
 KIP.Functions.GetAngle = function (start, end) {
 	"use strict";
 	var dx, dy, q_sign, q_ang, angle;
@@ -131,8 +119,3 @@ KIP.Functions.GetAngle = function (start, end) {
 
 	return (angle * (180 / Math.PI));
 };
-
-KIP.Functions.DegreesToRadians = function (deg) {
-	var result = ((Math.PI*deg) / 180);
-	return result;
-}

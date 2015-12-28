@@ -1,21 +1,14 @@
 /*globals KIP,window*/
 
-/**
- * @file Documents the Editable class, which implements the Drawable prototype
- * @author Kip Price
- * @version 1.2
- * @since 0.1
- */
-
-/**
- * Creates an Editable element and object
- * @constructor
- * @param {string} id - The ID that should be assigned to this object
- * @param {string} type - The type of input element that should display {optional}
- * @param {string} content - What should be shown as the content for {optional}
- * @param {function} validate - The function that should be used to validate if the editable can be saved {optional}
- * @param {function} update - The function to call once the editable successfully saves
- */
+/***********************************************************************
+ * @class Editable
+ * @description Creates an Editable element and object
+ * @param {string} id The ID that should be assigned to this object
+ * @param {string} type The type of input element that should display {optional}
+ * @param {string} content What should be shown as the content for {optional}
+ * @param {function} validate The function that should be used to validate if the editable can be saved {optional}
+ * @param {function} update The function to call once the editable successfully saves
+ ***********************************************************************/
 KIP.Objects.Editable = function (id, type, content, validate, update) {
   this.id = id;
   this.type = type || "text";
@@ -25,7 +18,7 @@ KIP.Objects.Editable = function (id, type, content, validate, update) {
   this.is_modifying = false;
 
   KIP.Objects.Drawable.call(this, this.id, "editable", this.content);
-
+  
   this.CreateElements();
   this.AddListeners();
 };
@@ -33,22 +26,22 @@ KIP.Objects.Editable = function (id, type, content, validate, update) {
 // This relies on the drawable framework
 KIP.Objects.Editable.prototype = Object.create(KIP.Objects.Drawable.prototype);
 
-/**
+/***********************************************************
  * Adds all event listeners for this object (mostly click events);
- */
+ ***********************************************************/
 KIP.Objects.Editable.prototype.AddListeners = function () {
   var that = this;
-
+  
   // Start our editing
   this.div.onclick = function (e) {
     if (!that.is_modifying) {
       that.Modify();
     }
-
+    
     if (e.stopPropagation) e.stopPropagation();
     if (e.cancelBubble !== null) e.cancelBubble = true;
   };
-
+  
   // Make sure that we stop editing when we click elsewhere
   window.addEventListener("click", function (e) {
     if (e.target === that.div) return;
@@ -56,7 +49,7 @@ KIP.Objects.Editable.prototype.AddListeners = function () {
       that.Save();
     }
   });
-
+  
   // Check to see if enter was pressed
   this.inputDiv.onkeydown = function (e) {
     if (e.keyCode === 13 && that.is_modifying) {
@@ -65,43 +58,43 @@ KIP.Objects.Editable.prototype.AddListeners = function () {
   };
 };
 
-/**
+/*************************************************************
  * Creates all elements that are needed to display this editable.
- */
+ *************************************************************/
 KIP.Objects.Editable.prototype.CreateElements = function () {
   this.inputDiv = KIP.Functions.CreateElement({type: "input", id: this.id + "|input", attr: [{key: "type", val: this.type}]});
 };
 
-/**
+/****************************************************
  * Starts the modification of the data of this editable
- */
+ ****************************************************/
 KIP.Objects.Editable.prototype.Modify = function () {
   this.is_modifying = true;
   this.inputDiv.value = this.content;
-
+  
   // Clear out the main div and add instead the input div
   this.div.innerHTML = "";
   this.div.appendChild(this.inputDiv);
-
+  
   this.inputDiv.select();
 	this.inputDiv.focus();
-
+  
 };
 
-/**
+/**************************************************
  * Save the new contents of the editable, assuming that validation is successful
- */
+ **************************************************/
 KIP.Objects.Editable.prototype.Save = function () {
   var content;
 
   // Grab the user input
   content = this.inputDiv.value;
-
+  
   this.div.removeChild(this.inputDiv);
 
   // Revert our modifying status
   this.is_modifying = false;
-
+  
   // If validation exists and it failed, revert the change
   if (this.validate && !this.validate(content)) {
     this.inputDiv.value = this.content;
@@ -117,5 +110,5 @@ KIP.Objects.Editable.prototype.Save = function () {
     if (this.update) {
       this.update(this.content, this);
     }
-  }
+  }  
 };

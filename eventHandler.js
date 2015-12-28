@@ -1,3 +1,0 @@
-KIP.Objects.EventHandler = function () {
-
-};
