@@ -46,16 +46,8 @@ var KIP = {
    * All unit tests for the library
    * @namespace Test
    */
-  Test : {},
-	
-	/**
-	 * All events for the library
-	 * @namespace Events
-	 */
-	Events : {}
+  Test : {}
 };
-
-KIP.Events.CSSChange = new Event("csschange");
 
 // CreateSimpleElement
 //--------------------------------------------------------------------
@@ -69,8 +61,8 @@ KIP.Events.CSSChange = new Event("csschange");
  *
  * @return {HTMLElement} The created element, with all specified parameters included.P
  */
-KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children) {
-  var elem, a, c;
+KIP.Functions.CreateSimpleElement = function (id, cls, content, attr) {
+  var elem, a;
 
   elem = document.createElement("div");
 
@@ -94,22 +86,6 @@ KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children) 
     if (attr.hasOwnProperty(a)) {
       try {
         elem.setAttribute(attr[a].key, attr[a].val);
-      } catch (e) {
-        continue;
-      }
-    }
-  }
-
-  // Loop through all of the children listed for this element
-  for (c in children) {
-    if (children.hasOwnProperty(c)) {
-      try {
-        if (children[c].setAttribute) {
-          elem.appendChild(children[c]);
-        } else {
-          child = KIP.Functions.CreateElement(children[c]);
-          elem.appendChild(child);
-        }
       } catch (e) {
         continue;
       }
@@ -205,24 +181,15 @@ KIP.Functions.CreateElement = function (obj) {
 KIP.Functions.AddCSSClass = function (elem, newClass) {
   var cls;
 	
-	if (!elem || !newClass) return;
-	
+	if (!elem) return;
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
 	
-	elem.dispatchEvent(KIP.Events.CSSChange);
-
-  // Still suport setting the class if the class is not originally set
-  cls = elem.getAttribute("class");
-  if (cls === null || cls === "null") {
-    elem.setAttribute("class", newClass);
-  }
-	
-	cls = " " + cls + " ";
+	cls = " " + elem.getAttribute("class") + " ";
 
   if (cls.indexOf(" " + newClass + " ") === -1){
     cls = cls + newClass;
-		elem.setAttribute("class", KIP.Functions.Trim(cls));
+    elem.setAttribute("class", KIP.Functions.Trim(cls));
   }
 };
 
@@ -238,22 +205,18 @@ KIP.Functions.RemoveCSSClass = function (elem, oldClass) {
   "use strict";
 	var cls, len;
 	
-	if (!elem || !oldClass) return;
+	if (!elem) return;
 	
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
-	
-	elem.dispatchEvent(KIP.Events.CSSChange);
 	
   cls = " " + elem.getAttribute("class") + " ";
   len = cls.length;
   cls = cls.replace(" " + oldClass + " "," ");
 
   if (cls.length !== len) {
-		elem.setAttribute("class", KIP.Functions.Trim(cls));
-		console.log("gone: " + elem);
+    elem.setAttribute("class", KIP.Functions.Trim(cls));
   }
-
 };
 
 // HasCSSClass
@@ -367,20 +330,6 @@ KIP.Functions.GetCSSAttribute = function (cls, item) {
   // Return a blank string if it couldn't be found
   return "";
 };
-
-KIP.Functions.CreateCSSClass = function (selector, attr) {
-	var cls, a;
-
-	cls = document.createElement("style");
-	
-	cls.innerHTML = selector + "{";
-	for (a = 0; a < attr.length; a += 1) {
-		cls.innerHTML += attr[a].key + ": " + attr[a].val + ";";
-	}
-	cls.innerHTML += "}";
-	
-	document.head.appendChild(cls);
-}
 
 // GetComputedStyle
 //---------------------------------------------------------
@@ -697,124 +646,6 @@ KIP.Functions.RemoveElemFromArr = function (arr, elem, equal) {
 
 };
 
-// RoundToPlace
-//--------------------------------------------------------
-/**
- * Helper function to round a number to a particular place
- * @param {number} num - The number to round
- * @param {number} place - A multiple of 10 that indicates the decimal place to round to. I.e., passing in 100 would round to the hundredths place
- */
 KIP.Functions.RoundToPlace = function (num, place) {
   return (Math.round(num * place) / place);
 };
-
-/**
-  * 
-*/
-KIP.Functions.TransitionToDisplayNone = function (elem, func, disp) {
-	"use strict";
-	
-	if (!disp) disp = "block";
-	
-	// Add the display none after a transition end 
-	elem.addEventListener("transitionend", function () {
-		if (func()) {
-			elem.style.display = "none";
-		}
-	});
-	
-	// Remove the display none at the start of the fade in transition
-	elem.addEventListener("csschangestart", function () {
-		if (func()) {
-			elem.style.display = disp;
-		}
-	})
-};
-
-KIP.Functions.HideWithoutHover = function (elem, hoverElem, onHover, onOut, shouldDisplayNone, disp) {
-	"use strict";
-	
-	// Add the mouse over listener
-	hoverElem.addEventListener("mouseover", function (ev) {
-		
-		KIP.Functions.RemoveCSSClass(elem, onOut);
-		KIP.Functions.AddCSSClass(elem, onHover);
-	});
-	
-	// Add the mouse out listener
-	hoverElem.addEventListener("mouseout", function (ev) {
-		if (KIP.Functions.IsChildEventTarget(ev, this)) return;
-		
-		KIP.Functions.RemoveCSSClass(elem, onHover);
-		KIP.Functions.AddCSSClass(elem, onOut);	
-	});
-	
-	KIP.Functions.TransitionToDisplayNone(elem, shouldDisplayNone, disp);
-}
-
-/**
- * Checks if a child of the current task is being targeted by the event
- * @param {Event} ev   - The event that is being triggered
- * @param {HTMLElement} root - The parent to check for
- * @returns {boolean} True if the event is being triggered on a child element of the root element, false otherwise
- */
-KIP.Functions.IsChildEventTarget = function (ev, root) {
-	"use strict";
-	return KIP.Functions.IsChild(root, ev.target);
-};
-
-/**
- * Checks if an element is a child of the provided parent element
- * @param {HTMLElement} root - The parent to check for
- * @param {HTMLElement} child - The element to check for being a child of the root node
- * @param {number} [levels] - The maximum number of layers that the child can be separated from its parent. Ignored if not set.
- * @returns {boolean} True if the child has the root as a parent
- */
-KIP.Functions.IsChild = function (root, child, levels) {
-  "use strict";
-  var parent;
-
-  parent = child;
-
-  // Loop through til we either have a match or ran out of parents
-  while (parent) {
-    if (parent === root) return true;
-    parent = parent.parentNode;
-  }
-
-  return false;
-};
-
-KIP.Functions.ShowOnHover = function (target, hidden, checkForChildren) {
-  "use strict";
-
-  target.addEventListener("mouseover", function (e) {
-    KIP.Functions.RemoveCSSClass(hidden, "hidden");
-  });
-
-  target.addEventListener("mouseout", function (e) {
-    var rel = e.toElement || e.relatedTarget;
-		
-		if (checkForChildren) {
-			if (KIP.Functions.IsChild(target, rel)) return;
-			if (hidden === rel) return;
-			if (KIP.Functions.IsChild(hidden, rel)) return;
-		}
-
-    KIP.Functions.AddCSSClass(hidden, "hidden");
-  });
-
-  hidden.addEventListener("mouseout", function (e) {
-    var rel = e.toElement || e.relatedTarget;
-		
-		if (checkForChildren) {
-			if (KIP.Functions.IsChild(rel, target)) return;
-			if (target === rel) return;
-			if (KIP.Functions.IsChild(target, rel)) return;
-		}
-
-    KIP.Functions.AddCSSClass(hidden, "hidden");
-  })
-
-  KIP.Functions.AddCSSClass(hidden, "hidden");
-}

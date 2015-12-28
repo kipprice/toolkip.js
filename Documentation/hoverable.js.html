@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>hoverable.js</title>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+  <link rel="stylesheet" media="all" href="doc-style.css" />
+  <script src="doc-filelist.js"></script>
+  <script>
+    var relativeDir = "", thisFile = "hoverable.js", defaultSidebar = true;
+  </script>
+  <script src="doc-script.js"></script>
+</head>
+<body>
+  <div id="sidebar_wrapper">
+    <div id="sidebar_switch">
+      <span class="tree">Files</span>
+      <span class="headings">Headings</span>
+    </div>
+    <div id="tree"></div>
+    <div id="headings">
+      <div class="heading h2">
+        <a href="#check%20to%20make%20sure%20that%20this%20is%20on%20the%20screen">Check to make sure that this is on the screen</a>
+      </div>
+    </div>
+  </div>
+  <div id="sidebar-toggle"></div>
+  <div id="container"><div class="background highlight"></div>
+<table cellpadding="0" cellspacing="0">
+  <tbody>
+      <tr>
+        <td class="docs">
+          <h1>hoverable.js</h1>
+        </td>
+        <td class="code highlight"></td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-1" id="section-1">&#182;</a>
+</div>
+
+        </td>
+        <td class="code highlight"><div class="highlight"><pre><span class="cm">/*globals KIP,window*/</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-2" id="section-2">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary">
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">file</div>
+    <div class="dox_tag_detail">
+      <span>Declaration of the Hoverable class</span>
+    </div>
+    <div class="dox_tag_title">author</div>
+    <div class="dox_tag_detail">
+      <span>Kip Price</span>
+    </div>
+    <div class="dox_tag_title">version</div>
+    <div class="dox_tag_detail">
+      <span>1.2</span>
+    </div>
+    <div class="dox_tag_title">since</div>
+    <div class="dox_tag_detail">
+      <span>0.8</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-3" id="section-3">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary">
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">enum</div>
+    <div class="dox_tag_detail">
+      <span>Enum of positions that the Hoverable could take</span>
+    </div>
+    <div class="dox_tag_title">readonly</div>
+    <div class="dox_tag_detail">
+    </div>
+    <div class="dox_tag_title">enum</div>
+    <div class="dox_tag_detail">
+      <span class="dox_type">number
+</span>
+      <span>{number}</span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s2">&quot;Top&quot;</span> <span class="o">:</span> <span class="mi">1</span><span class="p">,</span>
+  <span class="s2">&quot;TopRightAlign&quot;</span><span class="o">:</span> <span class="mi">17</span><span class="p">,</span>
+  <span class="s2">&quot;Bottom&quot;</span> <span class="o">:</span> <span class="mi">2</span><span class="p">,</span>
+  <span class="s2">&quot;BottomRightAlign&quot;</span> <span class="o">:</span> <span class="mi">18</span><span class="p">,</span>
+  <span class="s2">&quot;Left&quot;</span> <span class="o">:</span> <span class="mi">4</span><span class="p">,</span>
+  <span class="s2">&quot;LeftBottomAlign&quot;</span> <span class="o">:</span> <span class="mi">36</span><span class="p">,</span>
+  <span class="s2">&quot;Right&quot;</span> <span class="o">:</span> <span class="mi">8</span><span class="p">,</span>
+  <span class="s2">&quot;RightAlign&quot;</span> <span class="o">:</span> <span class="mi">16</span><span class="p">,</span>
+  <span class="s2">&quot;BottomAlign&quot;</span> <span class="o">:</span> <span class="mi">32</span><span class="p">,</span>
+  <span class="s2">&quot;RightBottomAlign&quot;</span> <span class="o">:</span> <span class="mi">40</span><span class="p">,</span>
+  <span class="s2">&quot;Top-Left&quot;</span> <span class="o">:</span> <span class="mi">5</span><span class="p">,</span>
+  <span class="s2">&quot;Top-Right&quot;</span> <span class="o">:</span> <span class="mi">9</span><span class="p">,</span>
+  <span class="s2">&quot;Bottom-Left&quot;</span> <span class="o">:</span> <span class="mi">6</span><span class="p">,</span>
+  <span class="s2">&quot;Bottom-Right&quot;</span> <span class="o">:</span> <span class="mi">10</span><span class="p">,</span>
+  <span class="s2">&quot;Custom&quot;</span><span class="o">:</span> <span class="mi">0</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-4" id="section-4">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Creates a drawable that can hover over its parent in a particular location</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">class
+</div>
+
+
+<div class="highlight"><pre><code><span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;dox_tag_detail&quot;</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="err">/div&gt;</span>
+<span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;dox_tag_title&quot;</span><span class="o">&gt;</span><span class="nx">Params</span><span class="o">&lt;</span><span class="err">/div&gt;</span>
+<span class="o">&lt;</span><span class="nx">div</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;dox_tag_detail&quot;</span><span class="o">&gt;</span>
+  <span class="o">&lt;</span><span class="nx">span</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;dox_tag_name&quot;</span><span class="o">&gt;</span><span class="nx">id</span><span class="o">&lt;</span><span class="err">/span&gt;</span>
+  <span class="o">&lt;</span><span class="nx">span</span> <span class="kr">class</span><span class="o">=</span><span class="s2">&quot;dox_type&quot;</span><span class="o">&gt;</span><span class="nb">String</span><span class="o">&lt;</span><span class="err">/span&gt;</span>
+  <span class="o">&lt;</span><span class="nx">span</span><span class="o">&gt;&lt;</span><span class="nx">ul</span><span class="o">&gt;</span>
+</code></pre></div>
+
+
+
+<p><li>The ID to give the hover element</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">cls</span>
+      <span class="dox_type">String</span>
+      <span><ul>
+<li>The class to assign the element, in addition to the standard "hoverable" class</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">content</span>
+      <span class="dox_type">String</span>
+      <span><ul>
+<li>What to display within the element</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[ref]</span>
+      <span class="dox_type">HTMLElement</span>
+      <span><ul>
+<li>The reference element to base the position off of</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[offset=Top]</span>
+      <span class="dox_type">OffsetEnum</span>
+      <span><ul>
+<li>Where to position the hover element relative to the reference</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[isSVG=False]</span>
+      <span class="dox_type">Boolean</span>
+      <span><ul>
+<li>If the reference element is an SVG, set this to true</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[adjust]</span>
+      <span class="dox_type">Object</span>
+      <span><ul>
+<li>An optional parameter that will slightly adjust the calculated placement of the Hoverable</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[adjust.x]</span>
+      <span class="dox_type">Number</span>
+      <span><ul>
+<li>The additional x value to add to the offset of the Hoverable</li>
+</ul></span>
+    </div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">[adjust.y]</span>
+      <span class="dox_type">Number</span>
+      <span><ul>
+<li>The additional y value to add to the offset of the Hoverable</li>
+</ul></span>
+    </div>
+  </div>
+</div></p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">id</span><span class="p">,</span> <span class="nx">cls</span><span class="p">,</span> <span class="nx">content</span><span class="p">,</span> <span class="nx">ref</span><span class="p">,</span> <span class="nx">offset</span><span class="p">,</span> <span class="nx">isSVG</span><span class="p">,</span> <span class="nx">adjust</span><span class="p">)</span> <span class="p">{</span>
+  <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">id</span> <span class="o">=</span> <span class="nx">id</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">cls</span> <span class="o">=</span> <span class="s2">&quot;hoverable &quot;</span> <span class="o">+</span> <span class="nx">cls</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">content</span> <span class="o">=</span> <span class="nx">content</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">reference</span> <span class="o">=</span> <span class="nx">ref</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">=</span> <span class="nx">offset</span> <span class="o">||</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Top</span><span class="p">;</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">isSVG</span> <span class="o">=</span> <span class="nx">isSVG</span><span class="p">;</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">adjust</span> <span class="o">=</span> <span class="nx">adjust</span> <span class="o">||</span> <span class="p">{</span><span class="nx">x</span><span class="o">:</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">y</span><span class="o">:</span> <span class="mi">0</span><span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-5" id="section-5">&#182;</a>
+</div>
+<p>Initialize the element to be disabled</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">this</span><span class="p">.</span><span class="nx">enabled</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-6" id="section-6">&#182;</a>
+</div>
+<p>Create the div using the drawable constructor</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Drawable</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">id</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">cls</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">content</span><span class="p">);</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-7" id="section-7">&#182;</a>
+</div>
+<p>Apply the styles that actually matter</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">position</span> <span class="o">=</span> <span class="s2">&quot;absolute&quot;</span><span class="p">;</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-8" id="section-8">&#182;</a>
+</div>
+<p>Implement the Drawable prototype</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nb">Object</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Drawable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">);</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-9" id="section-9">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Sets whether this hoverable should be drawn on its draw event</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">enabled</span>
+      <span class="dox_type">Boolean</span>
+      <span><ul>
+<li>True if we should complete the draw event when it is called</li>
+</ul></span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">SetEnabled</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">enabled</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">enabled</span> <span class="o">=</span> <span class="nx">enabled</span><span class="p">;</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-10" id="section-10">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Overrides the Drawable draw to make some position adjustments</p>
+  </div>
+  <div class="body">
+  </div>
+  <div class="details">
+    <div class="dox_tag_title">Params</div>
+    <div class="dox_tag_detail">
+      <span class="dox_tag_name">parent</span>
+      <span class="dox_type">HTMLElement</span>
+      <span><ul>
+<li>The parent to add this hoverable to</li>
+</ul></span>
+    </div>
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">Draw</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">parent</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">that</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-11" id="section-11">&#182;</a>
+</div>
+<p>Setup the parent if we need it</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">this</span><span class="p">.</span><span class="nx">parent</span> <span class="o">=</span> <span class="nx">parent</span> <span class="o">||</span> <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-12" id="section-12">&#182;</a>
+</div>
+<p>Quit if we aren't enabled</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">enabled</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-13" id="section-13">&#182;</a>
+</div>
+<p>Do our initial setup</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">this</span><span class="p">.</span><span class="nx">SetupParent</span><span class="p">();</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">MoveChild</span><span class="p">();</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-14" id="section-14">&#182;</a>
+</div>
+<p>Actually draw</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Drawable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">Draw</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">);</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-15" id="section-15">&#182;</a>
+</div>
+<p>Tweak everything so it fits</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">this</span><span class="p">.</span><span class="nx">AdjustChild</span><span class="p">();</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">nudged</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-16" id="section-16">&#182;</a>
+</div>
+<p>Make sure we nudge back on screen as we need</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="nb">window</span><span class="p">.</span><span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">that</span><span class="p">.</span><span class="nx">nudged</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">that</span><span class="p">.</span><span class="nx">NudgeOnscreen</span><span class="p">();</span>
+      <span class="nx">that</span><span class="p">.</span><span class="nx">nudged</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-17" id="section-17">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Guarantee that the parent's class will allow the hover element to be placed relatively</p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">SetupParent</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-18" id="section-18">&#182;</a>
+</div>
+<p>Quit if there isn't a parent yet</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-19" id="section-19">&#182;</a>
+</div>
+<p>Make sure the parent always has a strictly coded position</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">position</span> <span class="o">=</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">GetComputedStyle</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">,</span> <span class="s2">&quot;position&quot;</span><span class="p">);</span>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">position</span> <span class="o">===</span> <span class="s2">&quot;static&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">position</span> <span class="o">=</span> <span class="s2">&quot;relative&quot;</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-20" id="section-20">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Move the child hoverable roughly to where it needs to be.
+Fine-tuning will happen after drawing</p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">MoveChild</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span><span class="p">,</span> <span class="nx">off_x</span><span class="p">,</span> <span class="nx">off_y</span><span class="p">,</span> <span class="nx">box</span><span class="p">;</span>
+
+  <span class="nx">off_x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="nx">off_y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-21" id="section-21">&#182;</a>
+</div>
+<p>Quit if the offset is custom; the caller will have to set it</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">===</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Custom</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">)</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-22" id="section-22">&#182;</a>
+</div>
+<p>Calculate where the reference is right now</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">this</span><span class="p">.</span><span class="nx">isSVG</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">w</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">.</span><span class="nx">offsetWidth</span><span class="p">;</span>
+    <span class="nx">h</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">.</span><span class="nx">offsetHeight</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">box</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">.</span><span class="nx">getBoundingClientRect</span><span class="p">();</span>
+    <span class="nx">off_x</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">left</span><span class="p">;</span>
+    <span class="nx">w</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">right</span> <span class="o">-</span> <span class="nx">box</span><span class="p">.</span><span class="nx">left</span><span class="p">;</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-23" id="section-23">&#182;</a>
+</div>
+<p>off_y = box.top;</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="nx">h</span> <span class="o">=</span> <span class="nx">box</span><span class="p">.</span><span class="nx">bottom</span> <span class="o">-</span> <span class="nx">box</span><span class="p">.</span><span class="nx">top</span><span class="p">;</span>
+  <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-24" id="section-24">&#182;</a>
+</div>
+<p>Use bit checks to determine where the hover should start</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Top</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">h</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Bottom</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">+=</span> <span class="nx">h</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">+=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Left</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">w</span><span class="p">);</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Right</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">+=</span> <span class="nx">w</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">+=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+
+  <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="p">(</span><span class="nx">off_x</span> <span class="o">+</span> <span class="s2">&quot;px&quot;</span><span class="p">);</span>
+  <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">top</span> <span class="o">=</span> <span class="p">(</span><span class="nx">off_y</span> <span class="o">+</span> <span class="s2">&quot;px&quot;</span><span class="p">);</span>
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-25" id="section-25">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Adjusts the hover element so it is in the proper location and on screen</p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">AdjustChild</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+  <span class="kd">var</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span><span class="p">,</span> <span class="nx">off_x</span><span class="p">,</span> <span class="nx">off_y</span><span class="p">,</span> <span class="nx">g_off_x</span><span class="p">,</span> <span class="nx">g_off_y</span><span class="p">,</span> <span class="nx">pw</span><span class="p">,</span> <span class="nx">ph</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-26" id="section-26">&#182;</a>
+</div>
+<p>Quit if the offset is custom; the caller will have to set it</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">===</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Custom</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+
+  <span class="nx">w</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetWidth</span><span class="p">;</span>
+  <span class="nx">h</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetHeight</span><span class="p">;</span>
+  <span class="nx">off_x</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetLeft</span><span class="p">;</span>
+  <span class="nx">off_y</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetTop</span><span class="p">;</span>
+  <span class="nx">g_off_x</span> <span class="o">=</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">GlobalOffsetLeft</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">);</span>
+  <span class="nx">g_off_y</span> <span class="o">=</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">GlobalOffsetTop</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">);</span>
+  <span class="nx">pw</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">offsetWidth</span><span class="p">;</span>
+  <span class="nx">ph</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">parent</span><span class="p">.</span><span class="nx">offsetHeight</span><span class="p">;</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-27" id="section-27">&#182;</a>
+</div>
+<p>Use bit checks to determine where the hover should start</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Top</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">h</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-28" id="section-28">&#182;</a>
+</div>
+<p>If we are right aligning something, we will need to adjust our x value by our width</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">RightAlign</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">=</span> <span class="p">(</span><span class="nx">pw</span> <span class="o">-</span> <span class="nx">w</span><span class="p">);</span>
+  <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-29" id="section-29">&#182;</a>
+</div>
+<p>If we are putting something on the left side, put it there properly</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Left</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">w</span><span class="p">);</span>
+  <span class="p">}</span>
+  
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-30" id="section-30">&#182;</a>
+</div>
+<p>If we are bottom-aligning something, we will need to adjust our y offset</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">BottomAlign</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">=</span> <span class="p">(</span><span class="nx">ph</span> <span class="o">-</span> <span class="nx">h</span><span class="p">);</span>
+  <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap" id="check%20to%20make%20sure%20that%20this%20is%20on%20the%20screen">
+  <h2>
+    <a href="#check%20to%20make%20sure%20that%20this%20is%20on%20the%20screen" name="check%20to%20make%20sure%20that%20this%20is%20on%20the%20screen" class="pilcrow">&#182;</a>
+    Check to make sure that this is on the screen
+  </h2>
+</div>
+
+
+<blockquote>
+  <blockquote>
+    <p>Offscreen left : move to the right side >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">((</span><span class="nx">g_off_x</span> <span class="o">+</span> <span class="nx">w</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">.</span><span class="nx">offsetWidth</span><span class="p">;</span>
+  <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-32" id="section-32">&#182;</a>
+</div>
+<blockquote>
+  <blockquote>
+    <p>Offscreen right : move to the left side >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">g_off_x</span> <span class="o">&gt;</span> <span class="nb">window</span><span class="p">.</span><span class="nx">innerWidth</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_x</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">w</span><span class="p">);</span>
+  <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-33" id="section-33">&#182;</a>
+</div>
+<blockquote>
+  <blockquote>
+    <p>Offscreen bottom, or offscreen left still : move to the top >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">((</span><span class="nx">g_off_y</span>  <span class="o">&gt;</span> <span class="nb">window</span><span class="p">.</span><span class="nx">innerHeight</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="nx">g_off_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">))</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">h</span><span class="p">);</span>
+    <span class="nx">off_x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-34" id="section-34">&#182;</a>
+</div>
+<blockquote>
+  <blockquote>
+    <p>Offscreen top : move to the bottom >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">((</span><span class="nx">g_off_y</span> <span class="o">+</span> <span class="nx">h</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">off_y</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">.</span><span class="nx">offsetHeight</span><span class="p">;</span>
+  <span class="p">}</span>
+  
+  <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">MoveRelToElem</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">,</span> <span class="nx">off_x</span> <span class="o">+</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">adjust</span><span class="p">.</span><span class="nx">x</span> <span class="o">||</span> <span class="mi">0</span><span class="p">),</span> <span class="nx">off_y</span> <span class="o">+</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">adjust</span><span class="p">.</span><span class="nx">y</span> <span class="o">||</span> <span class="mi">0</span><span class="p">));</span>
+  
+<span class="p">};</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-35" id="section-35">&#182;</a>
+</div>
+<div class="dox">
+  <div class="summary"><p>Scoots the element so that all of it is onscreen </p>
+  </div>
+  <div class="body">
+  </div>
+</div>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+<span class="nx">KIP</span><span class="p">.</span><span class="nx">Objects</span><span class="p">.</span><span class="nx">Hoverable</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">NudgeOnscreen</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">w</span><span class="p">,</span> <span class="nx">h</span><span class="p">,</span> <span class="nx">off_x</span><span class="p">,</span> <span class="nx">off_y</span><span class="p">,</span> <span class="nx">g_off_x</span><span class="p">,</span> <span class="nx">g_off_y</span><span class="p">;</span>
+  
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-36" id="section-36">&#182;</a>
+</div>
+<p>Quit if the offset is custom; the caller will have to set it</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">===</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Custom</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+  
+  <span class="nx">w</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetWidth</span><span class="p">;</span>
+  <span class="nx">h</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetHeight</span><span class="p">;</span>
+  
+  <span class="nx">off_x</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetLeft</span><span class="p">;</span>
+  <span class="nx">off_y</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">.</span><span class="nx">offsetTop</span><span class="p">;</span>
+  
+  <span class="nx">g_off_x</span> <span class="o">=</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">GlobalOffsetLeft</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">);</span>
+  <span class="nx">g_off_y</span> <span class="o">=</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">GlobalOffsetTop</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">);</span>
+  
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-37" id="section-37">&#182;</a>
+</div>
+<hr />
+
+<p>If we need to nudge anything back on screen, do so</p>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Left</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Right</span><span class="p">)){</span>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">g_off_x</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">off_x</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">g_off_x</span><span class="p">);</span>
+    <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-38" id="section-38">&#182;</a>
+</div>
+<blockquote>
+  <blockquote>
+    <p>Offscreen right : nudge left >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="k">if</span> <span class="p">((</span><span class="nx">g_off_x</span> <span class="o">+</span> <span class="nx">w</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">window</span><span class="p">.</span><span class="nx">innerWidth</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">off_x</span> <span class="o">-=</span> <span class="p">((</span><span class="nx">g_off_x</span> <span class="o">+</span> <span class="nx">w</span><span class="p">)</span> <span class="o">-</span> <span class="nb">window</span><span class="p">.</span><span class="nx">innerWidth</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Top</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">offset</span> <span class="o">&amp;</span> <span class="nx">KIP</span><span class="p">.</span><span class="nx">Globals</span><span class="p">.</span><span class="nx">HoverOffsetEnum</span><span class="p">.</span><span class="nx">Bottom</span><span class="p">)){</span>
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-39" id="section-39">&#182;</a>
+</div>
+<blockquote>
+  <blockquote>
+    <p>Offscreen bottom, or offscreen left still : nudge up >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="k">if</span> <span class="p">((</span><span class="nx">g_off_y</span> <span class="o">+</span> <span class="nx">h</span><span class="p">)</span> <span class="o">&gt;</span> <span class="nb">window</span><span class="p">.</span><span class="nx">innerHeight</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">off_y</span> <span class="o">-=</span> <span class="p">((</span><span class="nx">g_off_y</span> <span class="o">+</span> <span class="nx">h</span><span class="p">)</span> <span class="o">-</span> <span class="nb">window</span><span class="p">.</span><span class="nx">innerHeight</span><span class="p">);</span>
+    <span class="p">}</span>
+
+
+</pre></div>
+        </td>
+      </tr>
+      <tr>
+        <td class="docs">
+<div class="pilwrap">
+  <a class="pilcrow" href="#section-40" id="section-40">&#182;</a>
+</div>
+<blockquote>
+  <blockquote>
+    <p>Offscreen top : nudge down >></p>
+  </blockquote>
+</blockquote>
+        </td>
+        <td class="code highlight"><div class="highlight"><pre>
+    <span class="k">if</span> <span class="p">(</span><span class="nx">g_off_y</span>  <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">off_y</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="nx">g_off_y</span><span class="p">);</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  
+    
+  <span class="nx">KIP</span><span class="p">.</span><span class="nx">Functions</span><span class="p">.</span><span class="nx">MoveRelToElem</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">div</span><span class="p">,</span> <span class="k">this</span><span class="p">.</span><span class="nx">reference</span><span class="p">,</span> <span class="nx">off_x</span><span class="p">,</span> <span class="nx">off_y</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+        </td>
+      </tr>
+  </tbody>
+</table>
+  </div>
+</body>
+</html>
