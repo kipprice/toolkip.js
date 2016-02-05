@@ -18,8 +18,15 @@ KIP.Functions.DateDiff = function (a, b, signed, milli, inclusive) {
 	ms = (1000 * 60 * 60 * 24);
 	
 	if (!milli) {
-		a = Math.floor(a.getTime() / ms);
-		b = Math.floor(b.getTime() / ms);
+		a.setHours(0);
+		a.setMilliseconds(0);
+		a.setMinutes(0);
+		a.setSeconds(0);
+		
+		b.setHours(0);
+		b.setMilliseconds(0);
+		b.setMinutes(0);
+		b.setSeconds(0);
 	}
 
 	if ((a > b) || signed) {
@@ -28,6 +35,9 @@ KIP.Functions.DateDiff = function (a, b, signed, milli, inclusive) {
 		diff = (b - a);
 	}
 	
+	if (!milli) {
+		diff = Math.floor(diff / ms);
+	}
 	
 	if (inclusive) {
 		diff += (ms * ((diff < 0) ? -1 : 1));

@@ -215,7 +215,7 @@ KIP.Functions.FullHexString = function (val, l) {
 	out = val.toString(16);
 
 	if (out.length < l) {
-		for (i = 0 ; i < (out.length - l); i += 1) {
+		for (i = 0 ; i < (l - out.length); i += 1) {
 			out = "0" + out;
 		}
 	}

@@ -1,4 +1,4 @@
-/*globals document*/
+/*globals document, window, Event*/
 
 /**
  * @file Helper functions for DOM and string manipulation
@@ -70,7 +70,7 @@ KIP.Events.CSSChange = new Event("csschange");
  * @return {HTMLElement} The created element, with all specified parameters included.P
  */
 KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children) {
-  var elem, a, c;
+  var elem, a, c, child;
 
   elem = document.createElement("div");
 
@@ -220,7 +220,7 @@ KIP.Functions.AddCSSClass = function (elem, newClass) {
 	
 	cls = " " + cls + " ";
 
-  if (cls.indexOf(" " + newClass + " ") === -1){
+  if (cls.indexOf(" " + newClass + " ") === -1) {
     cls = cls + newClass;
 		elem.setAttribute("class", KIP.Functions.Trim(cls));
   }
@@ -247,11 +247,10 @@ KIP.Functions.RemoveCSSClass = function (elem, oldClass) {
 	
   cls = " " + elem.getAttribute("class") + " ";
   len = cls.length;
-  cls = cls.replace(" " + oldClass + " "," ");
+  cls = cls.replace(" " + oldClass + " ", " ");
 
   if (cls.length !== len) {
 		elem.setAttribute("class", KIP.Functions.Trim(cls));
-		console.log("gone: " + elem);
   }
 
 };
@@ -311,10 +310,10 @@ KIP.Functions.SetCSSAttribute = function (cls, item, val, force) {
       for (i = 0; i < rule.length; i += 1) {
 
         // If we have a match on the class...
-        if (rule[i].selectorText === cls){
+        if (rule[i].selectorText === cls) {
 
           // ... and the class has the item we're looking for ...
-          if ( (rule[i].style[item]) || (force) ){
+          if ((rule[i].style[item]) || (force)) {
 
             //... set it to our new value, and return true.
             rule[i].style[item] = val;
@@ -340,10 +339,10 @@ KIP.Functions.SetCSSAttribute = function (cls, item, val, force) {
  * @return {string} The value of that particular CSS class's attribute
  */
 KIP.Functions.GetCSSAttribute = function (cls, item) {
-  var i,css,sheet,rule;
+  var i, css, sheet, rule;
 
   // Loop through all of the stylesheets we have available
-  for (sheet=0; sheet < document.styleSheets.length; sheet += 1) {
+  for (sheet = 0; sheet < document.styleSheets.length; sheet += 1) {
 
     // Pull in the appropriate index for the browser we're using
     css = document.all ? 'rules' : 'cssRules';  //cross browser
@@ -355,7 +354,7 @@ KIP.Functions.GetCSSAttribute = function (cls, item) {
       for (i = 0 ; i < rule.length; i += 1) {
 
         // If we find the class...
-        if (rule[i].selectorText === cls){
+        if (rule[i].selectorText === cls) {
 
           // ... return what the item is set to (if anything)
           return (rule[i].style[item]);
@@ -368,18 +367,32 @@ KIP.Functions.GetCSSAttribute = function (cls, item) {
   return "";
 };
 
-KIP.Functions.CreateCSSClass = function (selector, attr) {
-	var cls, a;
+KIP.Functions.CreateCSSClass = function (selector, attr, noAppend) {
+	var cls, a, styles;
 
-	cls = document.createElement("style");
+  styles = document.getElementsByTagName("style");
+  if (styles.length > 0) {
+    cls = styles[0];
+  } else {
+    cls = document.createElement("style");
+    cls.innerHTML = "";
+  }
 	
-	cls.innerHTML = selector + "{";
-	for (a = 0; a < attr.length; a += 1) {
-		cls.innerHTML += attr[a].key + ": " + attr[a].val + ";";
+	cls.innerHTML += "\n" + selector + " {\n";
+	for (a in attr) {
+    if (attr.hasOwnProperty(a)) {
+      if (attr[a].key) {
+        cls.innerHTML += "\t" + attr[a].key + ": " + attr[a].val + ";\n";
+      } else {
+        cls.innerHTML += "\t" + a + " : " + attr[a] + ";\n";
+      }
+    }
 	}
-	cls.innerHTML += "}";
+	cls.innerHTML += "\n}";
 	
-	document.head.appendChild(cls);
+	if (!noAppend) document.head.appendChild(cls);
+  
+  return cls;
 }
 
 // GetComputedStyle
@@ -477,7 +490,7 @@ KIP.Functions.auxGlobalOffset = function (elem, type, parent) {
   var offset = 0;
 
   // Recursively loop until we no longer have a parent
-  while(elem && (elem !== parent)) {
+  while (elem && (elem !== parent)) {
     if (elem[type]) {
       offset += elem[type];
     }
@@ -549,7 +562,7 @@ KIP.Functions.FindCommonParent = function (elem_a, elem_b) {
  * @return {obj} An object containing the keys x and y, set to the offset applied to the element.
  */
 KIP.Functions.MoveRelToElem = function (elem, ref, x, y, no_move) {
-  var offset_me,offset_them, dx, dy;
+  var offset_me, offset_them, dx, dy;
 
   // Find the offsets globally for each element
   offset_me = KIP.Functions.GlobalOffsets(elem);
@@ -674,7 +687,7 @@ KIP.Functions.ResizeElement = function (obj) {
 // RemoveElemFromArr
 //-------------------------------------------------------------
 /**
- * Removes an element from the array if it exists
+ * Finds & removes an element from the array if it exists.
  * @param {Array} arr - The array to remove from
  * @param {Variant} elem  - The element to remove
  * @param {Function} equal - The function that is used to test for equality
@@ -685,7 +698,7 @@ KIP.Functions.RemoveElemFromArr = function (arr, elem, equal) {
 
   // If we didn't get a function to test for equality, set it to the default
   if (!equal) {
-    equal = function (a, b) {return (a === b);};
+    equal = function (a, b) {return (a === b); };
   }
 
   // Loop through the array and remove all equal elements
@@ -731,27 +744,8 @@ KIP.Functions.TransitionToDisplayNone = function (elem, func, disp) {
 	})
 };
 
-KIP.Functions.HideWithoutHover = function (elem, hoverElem, onHover, onOut, shouldDisplayNone, disp) {
-	"use strict";
-	
-	// Add the mouse over listener
-	hoverElem.addEventListener("mouseover", function (ev) {
-		
-		KIP.Functions.RemoveCSSClass(elem, onOut);
-		KIP.Functions.AddCSSClass(elem, onHover);
-	});
-	
-	// Add the mouse out listener
-	hoverElem.addEventListener("mouseout", function (ev) {
-		if (KIP.Functions.IsChildEventTarget(ev, this)) return;
-		
-		KIP.Functions.RemoveCSSClass(elem, onHover);
-		KIP.Functions.AddCSSClass(elem, onOut);	
-	});
-	
-	KIP.Functions.TransitionToDisplayNone(elem, shouldDisplayNone, disp);
-}
-
+// IsChildEventTarget
+//--------------------------------------------------------
 /**
  * Checks if a child of the current task is being targeted by the event
  * @param {Event} ev   - The event that is being triggered
@@ -763,6 +757,8 @@ KIP.Functions.IsChildEventTarget = function (ev, root) {
 	return KIP.Functions.IsChild(root, ev.target);
 };
 
+// IsChild
+//--------------------------------------------------------
 /**
  * Checks if an element is a child of the provided parent element
  * @param {HTMLElement} root - The parent to check for
@@ -785,36 +781,113 @@ KIP.Functions.IsChild = function (root, child, levels) {
   return false;
 };
 
-KIP.Functions.ShowOnHover = function (target, hidden, checkForChildren) {
+
+// CreateTable
+//-------------------------------------------------------------------------------------
+/**
+ * Creates a table with a specified set of cell elements
+ * @param {string} tableID - The unique identifier to use for this table
+ * @param {string} [tableClass] - The CSS class to use for the table
+ * @param {array} elements - A 2D array of the indexing method [row][column] that contains the contents of the cell at this position that should be created within the table.
+ *                         - Can come in three forms: a string of plain content, an already created element, or an object array with the following properties
+ * @param {object} [elements[r][c].create] - An object to be passed into CreateElement, to generate the content of the cell
+ * @param {string} [elements[r][c].content] - A string to be used as the content of the cell
+ * @param {object} [elements[r][c].attr] - All additional attributes that should be applied to the cell (colspan & rowspan, e.g.)
+ *
+ * @returns {HTMLElement} The created HTML table
+ * 
+ * */
+KIP.Functions.CreateTable = function (tableID, tableClass, elements, rowNum, colNum) {
   "use strict";
-
-  target.addEventListener("mouseover", function (e) {
-    KIP.Functions.RemoveCSSClass(hidden, "hidden");
+  
+  var tbl, row, cell, elem, rIdx, cIdx, content, key;
+  
+  // Set a row number
+  if (!rowNum) {
+    rowNum = elements.length;
+  }
+  
+  // Create the table
+  tbl = KIP.Functions.CreateElement({
+    type: "table",
+    cls: tableClass
   });
-
-  target.addEventListener("mouseout", function (e) {
-    var rel = e.toElement || e.relatedTarget;
-		
-		if (checkForChildren) {
-			if (KIP.Functions.IsChild(target, rel)) return;
-			if (hidden === rel) return;
-			if (KIP.Functions.IsChild(hidden, rel)) return;
-		}
-
-    KIP.Functions.AddCSSClass(hidden, "hidden");
-  });
-
-  hidden.addEventListener("mouseout", function (e) {
-    var rel = e.toElement || e.relatedTarget;
-		
-		if (checkForChildren) {
-			if (KIP.Functions.IsChild(rel, target)) return;
-			if (target === rel) return;
-			if (KIP.Functions.IsChild(target, rel)) return;
-		}
-
-    KIP.Functions.AddCSSClass(hidden, "hidden");
-  })
-
-  KIP.Functions.AddCSSClass(hidden, "hidden");
+  
+  for (rIdx = 0; rIdx < rowNum; rIdx += 1) {
+    // Grab the column number if we don't have it
+    if (!colNum) {
+      colNum = elements[rIdx].length;
+    }
+    
+    row = tbl.insertRow(-1);
+    for (cIdx = 0; cIdx < colNum; cIdx += 1) {
+      
+      // Check how this element should be added
+      elem = elements[rIdx][cIdx];
+      cell = row.insertCell(-1);
+      this.ProcessCellContents(elem, cell);
+    }
+    
+  }
+  return tbl;
 }
+
+KIP.Functions.ProcessCellContents = function (data, cell) {
+  "use strict";
+  var content, key;
+  
+  // string
+  if (data.toLowerCase) {
+    cell.innerHTML = data;
+    
+  // HTML
+  } else if (data.appendChild) {
+    cell.appendChild(data)
+  
+  // Regular object
+  } else {
+    if (data.create) {
+      content = KIP.Functions.CreateElement(data.create);
+      cell.appendChild(content);
+    } else {
+      cell.innerHTML = data.content;
+    }
+    
+    // Handle additional properties
+    for (key in data.attr) {
+      if (data.attr.hasOwnProperty(key)) {
+        cell.setAttribute(key, data.attr[key]);
+      }
+    }
+  }
+  
+  return cell;
+};
+
+KIP.Functions.AddRow = function (table, elements, idx, colNum) {
+  "use strict";
+  var row, cell, cIdx, data;
+  
+  if (!idx && (idx !== 0)) {
+    idx = -1;
+  }
+  
+  if (!colNum && colNum !== 0) {
+    colNum = elements.length;
+  }
+  
+  // Quit if we don't have a table
+  if (!table) return;
+  if (!table.insertRow) return;
+  
+  row = table.insertRow(idx);
+  
+  // Loop through columns to add cells
+  for (cIdx = 0; cIdx < colNum; cIdx += 1) {
+    cell = row.insertCell(-1);
+    data = elements[cIdx] || "";
+    this.ProcessCellContents(data, cell);
+  }
+  
+  return row;
+};

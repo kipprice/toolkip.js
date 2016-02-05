@@ -63,7 +63,7 @@ KIP.Objects.Select.prototype.AddListeners = function () {
 		}
 	});
 	
-	this.input.addEventListener("input", function (e) {
+	this.input.addEventListener("keyup", function (e) {
 		that.Filter();
 		e.stopPropagation();
 		return false;
@@ -120,6 +120,9 @@ KIP.Objects.Select.prototype.AddData = function (obj) {
 			this.dataDiv.appendChild(opt);
 		}
 	}
+	
+	// Make sure we also filter out new items
+	this.Filter();
 	
 };
 
