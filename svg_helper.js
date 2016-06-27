@@ -1,4 +1,4 @@
-/*globals KIP,document*/
+/*globals KIP,document,console*/
 /**
  * @file Functions that allow for easier creation of SVG elements
  * @author Kip Price
@@ -27,9 +27,10 @@ KIP.Functions.CreateSVG = function (id, width, height, view, content, noAspect) 
 		svg.setAttribute("id", id);
 
 		// Set the various sizing variables, or use defaults
-		svg.setAttribute("width",width || 0);
-		svg.setAttribute("height",height || 0);
+		svg.setAttribute("width", width || 0);
+		svg.setAttribute("height", height || 0);
 		svg.setAttribute("viewBox", view || "0 0 0 0");
+		svg.setAttribute("version", "1.1");
 
 		// Give the new content
 		if (content) svg.innerHTML = content;
@@ -62,7 +63,7 @@ KIP.Functions.CreateSVGElem = function (type, attr) {
 		elem = document.createElementNS("http://www.w3.org/2000/svg", type);
 
 		// Loop through the various attributes and assign them out
-		for (key in attr){
+		for (key in attr) {
 			if (attr.hasOwnProperty(key)) {
 				elem.setAttribute(key, attr[key]);
 			}

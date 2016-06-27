@@ -67,6 +67,9 @@ KIP.Functions.GenerateColor = function (id, firstRotate) {
 	return color;
 };
 
+/**
+ * Finds the current color of the color object & returns it
+ */
 KIP.Functions.GetCurrentColor = function () {
 		// Initialize the global color object if we haven't yet
 	if (!KIP.Globals.ColorObj) {

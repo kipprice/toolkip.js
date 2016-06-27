@@ -11,51 +11,57 @@
  * Global structure of the KIP library
  * @namespace KIP
  */
-var KIP = {
-  /**
-   * All object definitions contained within the library
-   * @namespace Objects
-   */
-  Objects : {},
+if (!window.KIP) {
+	window.KIP = {
+		/**
+		 * All object definitions contained within the library
+		 * @namespace Objects
+		 */
+		Objects : {},
 
-  /**
-   * All global function definitions contained within the library
-   * @namespace Functions
-   */
-  Functions : {},
+		/**
+		 * All global function definitions contained within the library
+		 * @namespace Functions
+		 */
+		Functions : {},
 
-  /**
-   * All constants that are necessary for this library
-   * @namespace Constants
-   */
-  Constants : {},
+		/**
+		 * All constants that are necessary for this library
+		 * @namespace Constants
+		 */
+		Constants : {},
 
-  /**
-   * All globals that are necessary for this library
-   * @namespace Globals
-   */
-  Globals : {},
+		/**
+		 * All globals that are necessary for this library
+		 * @namespace Globals
+		 */
+		Globals : {},
 
-  /**
-   * All configurable options for the library
-   * @namespace Options
-   */
-  Options : {},
+		/**
+		 * All configurable options for the library
+		 * @namespace Options
+		 */
+		Options : {},
 
-  /**
-   * All unit tests for the library
-   * @namespace Test
-   */
-  Test : {},
-	
-	/**
-	 * All events for the library
-	 * @namespace Events
-	 */
-	Events : {}
-};
+		/**
+		 * All unit tests for the library
+		 * @namespace Test
+		 */
+		Test : {},
 
-KIP.Events.CSSChange = new Event("csschange");
+		/**
+		 * All events for the library
+		 * @namespace Events
+		 */
+		Events : {}
+	};
+}
+
+try {
+	KIP.Events.CSSChange = new Event("csschange");
+} catch (e) {
+	console.log("No event");
+}
 
 // CreateSimpleElement
 //--------------------------------------------------------------------
@@ -92,27 +98,26 @@ KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children) 
   // Loop through our list of attributes and set them too
   for (a in attr) {
     if (attr.hasOwnProperty(a)) {
-      try {
-        elem.setAttribute(attr[a].key, attr[a].val);
-      } catch (e) {
-        continue;
-      }
+      if (!attr[a]) continue;
+			
+			if (attr[a].key) {
+				elem.setAttribute(attr[a].key, attr[a].val);
+			} else {
+				elem.setAttribute(a, attr[a]);
+			}
+      
     }
   }
 
   // Loop through all of the children listed for this element
   for (c in children) {
     if (children.hasOwnProperty(c)) {
-      try {
-        if (children[c].setAttribute) {
-          elem.appendChild(children[c]);
-        } else {
-          child = KIP.Functions.CreateElement(children[c]);
-          elem.appendChild(child);
-        }
-      } catch (e) {
-        continue;
-      }
+			if (children[c].setAttribute) {
+				elem.appendChild(children[c]);
+			} else {
+				child = KIP.Functions.CreateElement(children[c]);
+				elem.appendChild(child);
+			}
     }
   }
 
@@ -159,30 +164,38 @@ KIP.Functions.CreateElement = function (obj) {
     elem.innerHTML = obj.before_content;
   }
 
+  // Also check for just plain "Content"
+  if (obj.content) {
+    elem.innerHTML += obj.content;
+  }
+
   // Loop through all other attributes that we should be setting
   for (a in obj.attr) {
     if (obj.attr.hasOwnProperty(a)) {
-      try {
-        elem.setAttribute(obj.attr[a].key, obj.attr[a].val);
-      } catch (e) {
-        continue;
-      }
+      if (!obj.attr[a]) continue;
+			
+			if (obj.attr[a].key) {
+				elem.setAttribute(obj.attr[a].key, obj.attr[a].val);
+			} else {
+				elem.setAttribute(a, obj.attr[a]);
+			}
+      
     }
   }
 
   // Loop through all of the children listed for this element
   for (c in obj.children) {
     if (obj.children.hasOwnProperty(c)) {
-      try {
-        if (obj.children[c].setAttribute) {
-          elem.appendChild(obj.children[c]);
-        } else {
-          child = KIP.Functions.CreateElement(obj.children[c]);
-          elem.appendChild(child);
-        }
-      } catch (e) {
-        continue;
-      }
+      	
+			if (!obj.children[c]) continue;
+
+			if (obj.children[c].setAttribute) {
+				elem.appendChild(obj.children[c]);
+			} else {
+				child = KIP.Functions.CreateElement(obj.children[c]);
+				elem.appendChild(child);
+			}
+      
     }
   }
 
@@ -204,20 +217,23 @@ KIP.Functions.CreateElement = function (obj) {
  */
 KIP.Functions.AddCSSClass = function (elem, newClass) {
   var cls;
-	
+
 	if (!elem || !newClass) return;
-	
+
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
-	
-	elem.dispatchEvent(KIP.Events.CSSChange);
+
+	if (KIP.Events.CSSChange) {
+		elem.dispatchEvent(KIP.Events.CSSChange);
+	}
 
   // Still suport setting the class if the class is not originally set
   cls = elem.getAttribute("class");
-  if (cls === null || cls === "null") {
+  if (!cls) {
     elem.setAttribute("class", newClass);
+    return;
   }
-	
+
 	cls = " " + cls + " ";
 
   if (cls.indexOf(" " + newClass + " ") === -1) {
@@ -237,14 +253,16 @@ KIP.Functions.AddCSSClass = function (elem, newClass) {
 KIP.Functions.RemoveCSSClass = function (elem, oldClass) {
   "use strict";
 	var cls, len;
-	
+
 	if (!elem || !oldClass) return;
-	
+
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
-	
-	elem.dispatchEvent(KIP.Events.CSSChange);
-	
+
+	if (KIP.Events.CSSChange) {
+		elem.dispatchEvent(KIP.Events.CSSChange);
+	}
+
   cls = " " + elem.getAttribute("class") + " ";
   len = cls.length;
   cls = cls.replace(" " + oldClass + " ", " ");
@@ -266,12 +284,12 @@ KIP.Functions.RemoveCSSClass = function (elem, oldClass) {
  * @returns {Boolean} True if the element has the CSS class applied; false otherwise
  */
 KIP.Functions.HasCSSClass = function (elem, cls) {
-	
+
 	if (!elem) return;
-	
+
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
-	
+
   var cur_cls = " " + elem.getAttribute("class") + " ";
 
   if (cur_cls.indexOf(" " + cls + " ") === -1) {
@@ -377,7 +395,7 @@ KIP.Functions.CreateCSSClass = function (selector, attr, noAppend) {
     cls = document.createElement("style");
     cls.innerHTML = "";
   }
-	
+
 	cls.innerHTML += "\n" + selector + " {\n";
 	for (a in attr) {
     if (attr.hasOwnProperty(a)) {
@@ -389,9 +407,9 @@ KIP.Functions.CreateCSSClass = function (selector, attr, noAppend) {
     }
 	}
 	cls.innerHTML += "\n}";
-	
+
 	if (!noAppend) document.head.appendChild(cls);
-  
+
   return cls;
 }
 
@@ -494,7 +512,7 @@ KIP.Functions.auxGlobalOffset = function (elem, type, parent) {
     if (elem[type]) {
       offset += elem[type];
     }
-    elem = elem.offsetParent;
+    elem = elem.parentNode;
   }
 
   return offset;
@@ -589,7 +607,7 @@ KIP.Functions.MoveRelToElem = function (elem, ref, x, y, no_move) {
 /**
  * Allows you to easily remove a subclass from all elements that have a certain main class.
  * Useful for things like button selection
- * 
+ *
  * @param {String} cls - The main class to find all elements of
  * @param {String} subcls - The sub class to remove from all of those elements
  * @param {HTMLElement} [exception] - If needed, a single element that should not have its subclass removed.
@@ -597,10 +615,10 @@ KIP.Functions.MoveRelToElem = function (elem, ref, x, y, no_move) {
 KIP.Functions.RemoveSubclassFromAllElements = function (cls, subcls, exception) {
 	var elems, e, elem;
 	elems = document.getElementsByClassName(cls);
-	
+
 	for (e = 0; e < elems.length; e += 1) {
 		elem = elems[e];
-		
+
 		// Only remove it if it isn't the exception
 		if (elem !== exception) {
 			KIP.Functions.RemoveCSSClass(elem, subcls);
@@ -623,36 +641,36 @@ KIP.Functions.AddResizingElement = function (elem, fixedRatio, forceInitW, force
 	if (!KIP.Globals.Resizables) {
 		KIP.Globals.Resizables = [];
 	}
-	
+
 	idx = KIP.Globals.Resizables.length;
-	
+
 	// Create an object with the initial parameters included
 	KIP.Globals.Resizables[idx] = {
-		
+
 		// The original x, y, w, and h of the element
 		o_x: KIP.Functions.GlobalOffsetLeft(elem),
 		o_y: KIP.Functions.GlobalOffsetTop(elem),
 		o_w: elem.offsetWidth,
 		o_h: elem.offsetHeight,
-		
+
 		// The global width and height of the original window
 		g_w: forceInitW || window.innerWidth,
 		g_h: forceInitH || (window.innerWidth * fixedRatio) || window.innerHeight,
-	
+
 		// Other useful elements to keep track of
-		h_w_ratio: fixedRatio || 1, 
+		h_w_ratio: fixedRatio || 1,
 		elem: elem
 	};
-	
+
 	obj = KIP.Globals.Resizables[idx];
-	
+
 	// Add a listener on resize
 	window.addEventListener("resize", function () {
 		KIP.Functions.ResizeElement(obj);
 	});
-	
+
 	return idx;
-	
+
 };
 
 // ResizeElement
@@ -663,22 +681,22 @@ KIP.Functions.AddResizingElement = function (elem, fixedRatio, forceInitW, force
  */
 KIP.Functions.ResizeElement = function (obj) {
 	var perc, h, wRatio, hRatio;
-	
+
 	// Calculate the ratio for the width
 	wRatio = (window.innerWidth / obj.g_w);
 
 	// Calculate the ratios we need for the height
 	h = (obj.h_w_ratio * window.innerWidth) || (window.innerHeight);
 	hRatio = (h / obj.g_h);
-	
+
 	// Calculate the x coordinate
 	perc = (obj.o_x / obj.g_w); // Percentage of the width this appeared at originally
 	obj.elem.style.left = (perc * window.innerWidth) + "px";
-	
+
 	// Calculate the y coordinate
 	perc = (obj.o_y / obj.g_h);
 	obj.elem.style.top = (perc * h) + "px";
-	
+
 	// Calculate the width and height
 	obj.elem.style.width = (obj.o_w * wRatio) + "px";
 	obj.elem.style.height = (obj.o_h * hRatio) + "px";
@@ -722,20 +740,20 @@ KIP.Functions.RoundToPlace = function (num, place) {
 };
 
 /**
-  * 
+  *
 */
 KIP.Functions.TransitionToDisplayNone = function (elem, func, disp) {
 	"use strict";
-	
+
 	if (!disp) disp = "block";
-	
-	// Add the display none after a transition end 
+
+	// Add the display none after a transition end
 	elem.addEventListener("transitionend", function () {
 		if (func()) {
 			elem.style.display = "none";
 		}
 	});
-	
+
 	// Remove the display none at the start of the fade in transition
 	elem.addEventListener("csschangestart", function () {
 		if (func()) {
@@ -781,6 +799,22 @@ KIP.Functions.IsChild = function (root, child, levels) {
   return false;
 };
 
+// AppendChildren
+//-------------------------------------------------
+/**
+ * Appends an arbitrary number of children to the specified parent node. Loops through all members of the argument list to
+ * get the appropriate children to add.
+ * @param {HTMLElement} parent - The parent element to add children to
+ */
+KIP.Functions.AppendChildren = function (parent) {
+  "use strict";
+  var idx;
+
+  for (idx = 1; idx < arguments.length; idx += 1) {
+    parent.appendChild(arguments[idx]);
+  }
+}
+
 
 // CreateTable
 //-------------------------------------------------------------------------------------
@@ -795,39 +829,39 @@ KIP.Functions.IsChild = function (root, child, levels) {
  * @param {object} [elements[r][c].attr] - All additional attributes that should be applied to the cell (colspan & rowspan, e.g.)
  *
  * @returns {HTMLElement} The created HTML table
- * 
+ *
  * */
 KIP.Functions.CreateTable = function (tableID, tableClass, elements, rowNum, colNum) {
   "use strict";
-  
+
   var tbl, row, cell, elem, rIdx, cIdx, content, key;
-  
+
   // Set a row number
   if (!rowNum) {
     rowNum = elements.length;
   }
-  
+
   // Create the table
   tbl = KIP.Functions.CreateElement({
     type: "table",
     cls: tableClass
   });
-  
+
   for (rIdx = 0; rIdx < rowNum; rIdx += 1) {
     // Grab the column number if we don't have it
     if (!colNum) {
       colNum = elements[rIdx].length;
     }
-    
+
     row = tbl.insertRow(-1);
     for (cIdx = 0; cIdx < colNum; cIdx += 1) {
-      
+
       // Check how this element should be added
       elem = elements[rIdx][cIdx];
       cell = row.insertCell(-1);
       this.ProcessCellContents(elem, cell);
     }
-    
+
   }
   return tbl;
 }
@@ -835,15 +869,15 @@ KIP.Functions.CreateTable = function (tableID, tableClass, elements, rowNum, col
 KIP.Functions.ProcessCellContents = function (data, cell) {
   "use strict";
   var content, key;
-  
+
   // string
   if (data.toLowerCase) {
     cell.innerHTML = data;
-    
+
   // HTML
   } else if (data.appendChild) {
     cell.appendChild(data)
-  
+
   // Regular object
   } else {
     if (data.create) {
@@ -852,7 +886,7 @@ KIP.Functions.ProcessCellContents = function (data, cell) {
     } else {
       cell.innerHTML = data.content;
     }
-    
+
     // Handle additional properties
     for (key in data.attr) {
       if (data.attr.hasOwnProperty(key)) {
@@ -860,34 +894,71 @@ KIP.Functions.ProcessCellContents = function (data, cell) {
       }
     }
   }
-  
+
   return cell;
 };
 
 KIP.Functions.AddRow = function (table, elements, idx, colNum) {
   "use strict";
   var row, cell, cIdx, data;
-  
+
   if (!idx && (idx !== 0)) {
     idx = -1;
   }
-  
+
   if (!colNum && colNum !== 0) {
     colNum = elements.length;
   }
-  
+
   // Quit if we don't have a table
   if (!table) return;
   if (!table.insertRow) return;
-  
+
   row = table.insertRow(idx);
-  
+
   // Loop through columns to add cells
   for (cIdx = 0; cIdx < colNum; cIdx += 1) {
     cell = row.insertCell(-1);
     data = elements[cIdx] || "";
     this.ProcessCellContents(data, cell);
   }
-  
+
   return row;
 };
+
+KIP.Functions.CombineObjects = function (objA, objB, deep) {
+  "use strict";
+  var ret, tmp, loopThru;
+
+  ret = {};
+
+  // Define a function that will pull in relevant details from 
+  loopThru = function (array, retArr) {
+    var key;
+
+    // Loop thru each key in the array
+    for (key in array) {
+      if (array.hasOwnProperty(key)) {
+
+        // If doing a deep copy, make sure we recurse
+        if (deep && (typeof(array[key]) === "object")) {
+          tmp = {};
+          tmp.prototype = Object.create(array[key].prototype);
+          tmp = KIP.Functions.CombineObjects(tmp, array[key]);
+          retArr[key] = tmp;
+        
+        // Otherwise copy directly
+        } else {
+          retArr[key] = array[key];
+        }
+      }
+    }
+  }
+
+  // Write the array copies for A & B
+  loopThru(objA, ret);
+  loopThru(objB, ret);
+
+  // Return the appropriate output array
+  return ret;
+}

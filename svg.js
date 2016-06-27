@@ -40,7 +40,7 @@ KIP.Objects.SVGDrawable = function (id, preventEvents) {
 	this.fontProperty = {};
 
 	this.autoResize = true;
-	this.zoomAmt = 0.05;
+	this.zoomAmt = 0.08;
 
 	if (preventEvents) return;
 	this.div.style.cursor = "-webkit-grab";
@@ -48,7 +48,6 @@ KIP.Objects.SVGDrawable = function (id, preventEvents) {
 
 	// Handle the scroll wheel event for the SVG
 	this.div.addEventListener("wheel", function (e) {
-		that.zoomAmt = (that.viewW / 20);
 		var delta = e.deltaY;
 		delta = (delta > 0) ? that.zoomAmt : -1 * that.zoomAmt;
 		that.Zoom(delta);
@@ -315,6 +314,15 @@ KIP.Objects.SVGDrawable.prototype.FinishPath = function (element) {
 
 // SVGDrawable.AddRegularPolygon
 //-------------------------------------------------------------------------------------------------------------
+/**
+ * Creates an SVG regular polygon
+ * @param {number} centerX - The central x position of the polygon
+ * @param {number} centerY - The central y position of the polygon
+ * @param {number} sides - The number of sides the polygon should have
+ * @param {number} radius - How far a radial arm of the polygon should extend
+ * @param {object} [attr] - Any additional attributes that should be applied to the SVG element
+ * @param {object} [grp] - The group this element should belong to
+ */
 KIP.Objects.SVGDrawable.prototype.AddRegularPolygon = function (centerX, centerY, sides, radius, attr, grp) {
 	"use strict";
 	var intAngle, p, points, idx, x, y, curAngle;
@@ -337,12 +345,48 @@ KIP.Objects.SVGDrawable.prototype.AddRegularPolygon = function (centerX, centerY
 	}
 
 	p.setAttribute("points", points);
+	
+	return p;
 };
 
 // SVGDrawable.RegularStar
 //---------------------------------------------------------------------------------------------
-KIP.Objects.SVGDrawable.prototype.AddRegularStar = function (x, y, sides, radius, attr, grp) {
-
+KIP.Objects.SVGDrawable.prototype.AddRegularStar = function (centerX, centerY, sides, radius, innerRadius, attr, grp) {
+	"use strict";
+	var intAngle, p, points, idx, x, y, curAngle;
+	
+	curAngle = 0;
+	points = "";
+	
+	if (this.autoResize) this.UpdateView(centerX - radius, centerY - radius, 2 * radius, 2 * radius);
+	
+	intAngle = KIP.Functions.RoundToPlace(KIP.Functions.DegreesToRadians(360 / sides), 1000);
+	
+	if (!attr) attr = {};
+	attr.points = "";
+	
+	p = this.AddChild("polygon", attr, grp);
+	
+	// Loop through all of the points of the star
+	for (idx = 0; idx < sides; idx += 1) {
+    
+		// Outer point
+		x = centerX + KIP.Functions.RoundToPlace(Math.sin(curAngle) * radius, 10);
+		y = centerY + KIP.Functions.RoundToPlace(-1 * Math.cos(curAngle) * radius, 10);
+		curAngle += (intAngle / 2);
+		points += x + ", " + y + " ";
+		
+		// Inner point
+		x = centerX + KIP.Functions.RoundToPlace(Math.sin(curAngle) * innerRadius, 10);
+		y = centerY + KIP.Functions.RoundToPlace(-1 * Math.cos(curAngle) * innerRadius, 10);
+		curAngle += (intAngle / 2);
+		points += x + ", " + y + " ";
+		
+  }
+	
+	p.setAttribute("points", points);
+	
+	return p;
 };
 
 // SVGDrawable.AddCircle
@@ -353,11 +397,7 @@ KIP.Objects.SVGDrawable.prototype.AddRegularStar = function (x, y, sides, radius
  * @param {Number} x - The x for the center of the circle
  * @param {Number} y - The y value for the center of the circle
  * @param {Number} radius - The radius for the circle
- * @param {Object} style - An array defining how to style this rectangle
- * @param {Object} style.fill - An object array definiging various fill properties. See {@link KIP.Objects.SVGDrawable#AssignFillValues|AssignFillValues} for details.
- * @param {Object} style.stroke - An object array defining various stroke properties. See {@link KIP.Objects.SVGDrawable#AssignStrokeValues|AssignStrokeValues} for details.
- * @param {String} [id] - The ID that should be assigned to the element
- * @param {String} [cls] -	The CSS class that should be applied to this element
+ * @param {String} [attr] - Any attributes that should be applied directly to the element
  * @param {SVGElement} [group] - The SVG group to add this element to
  *
  * @returns {SVGElement} The element that is created
@@ -381,7 +421,8 @@ KIP.Objects.SVGDrawable.prototype.AddCircle = function (x, y, radius, attr, grp)
 KIP.Objects.SVGDrawable.prototype.AddPerfectArc = function (center, radius, startDeg, endDeg, direction, noRadii, attr, grp) {
 	var elem, end, start, aDiff, padding, adjust, angle;
 
-	padding = parseInt(style.stroke.width, 10) || 1;
+	padding = parseInt(this.fillProperty.width, 10) || 1;
+	
 	if (this.autoResize) this.UpdateView(center.x - radius - padding, center.y - radius - padding, 2 * (radius + padding), 2 * (radius + padding));
 	start = {};
 	end = {};
@@ -394,7 +435,7 @@ KIP.Objects.SVGDrawable.prototype.AddPerfectArc = function (center, radius, star
 	end.x = Math.sin(KIP.Functions.DegreesToRadians(endDeg)) * radius + center.x;
 	end.y = -1 * (Math.cos(KIP.Functions.DegreesToRadians(endDeg)) * radius) + center.y;
 
-	adjust = parseInt(style.stroke.width, 10) * Math.sqrt(2) || 0; // Hypotenuse
+	adjust = parseInt(this.fillProperty.width, 10) * Math.sqrt(2) || 0; // Hypotenuse
 	angle = KIP.Functions.DegreesToRadians(aDiff + startDeg); // Appropriate angle
 
 	if (!attr) attr = {};
@@ -472,8 +513,8 @@ KIP.Objects.SVGDrawable.prototype.AddChild = function (type, attr, group) {
  *
  * @return {SVGElement} The text element that is created
  */
-KIP.Objects.SVGDrawable.prototype.AddText = function (elem, text, x, y, attr, origin, group) {
-	var txt, tSpan, cx, cy, e_x, e_y, box, oX, oY;
+KIP.Objects.SVGDrawable.prototype.AddText = function (elem, text, x, y, attr, origin, group, flowRect) {
+	var txt, tSpan, cx, cy, e_x, e_y, box, oX, oY, flowRoot, flowRegion, flowElem, flowPara;
 	
 	// Default the x/y values
 	x = x || 0;
@@ -490,11 +531,35 @@ KIP.Objects.SVGDrawable.prototype.AddText = function (elem, text, x, y, attr, or
 	attr.x = x;
 	attr.y = y;
 
-	txt = KIP.Functions.CreateSVGElem("text", attr);
-	txt.innerHTML = text;
+	if (!flowRect) {
+		txt = KIP.Functions.CreateSVGElem("text", attr);
+		txt.innerHTML = text;
+	} else {
+		flowPara = KIP.Functions.CreateSVGElem("flowPara");
+		flowPara.innerHTML = text;
+		
+		// Create the rectangle that sets dimensions
+		flowRect.x = attr.x;
+		flowRect.y = attr.y;
+		flowRegion = KIP.Functions.CreateSVGElem("flowRegion");
+		flowElem = KIP.Functions.CreateSVGElem("rect", flowRect);
+		flowRegion.appendChild(flowElem);
+		
+		
+		// Create the wrapping flow element
+		txt = KIP.Functions.CreateSVGElem("flowRoot", {id: attr.id});
+		txt.appendChild(flowRegion);
+		txt.appendChild(flowPara);
+	}
+	
 	this.AssignStyle(txt);
 
-	box = this.MeasureElem(txt);
+	// Get the measurements for the 
+	if (!flowRect && (this.autoResize || origin)) {
+		box = this.MeasureElem(txt);
+	} else {
+		box = this.MeasureElem(flowPara);
+	}
 
 	// X and Y are where the origin point should be positioned
 	// We'll have to calculate where to actually draw the text, given that the origin may be different spots
@@ -513,6 +578,7 @@ KIP.Objects.SVGDrawable.prototype.AddText = function (elem, text, x, y, attr, or
 
 	if (this.autoResize) this.UpdateView(box.x, box.y, box.width, box.height);
 
+	
 	if (!group) {
 		this.div.appendChild(txt);
 	} else {
@@ -533,17 +599,14 @@ KIP.Objects.SVGDrawable.prototype.AddText = function (elem, text, x, y, attr, or
 KIP.Objects.SVGDrawable.prototype.MeasureElem = function (elem) {
 	"use strict";
 	var p, box, childP;
-
+	
+	if (!elem) return;
 	
 	// Try to grab the measurement before we try to do some parent swapping
 	if (this.div.parentNode) {
-		try {
-			box = elem.getBBox();
-			if (box.x || box.y || box.height || box.width) return box;
-		} catch (e) {
-			console.log("error thrown");
-		}
+		box = elem.getBBox();
 	}
+	if (box && (box.x || box.y || box.height || box.width)) return box;
 
 	p = this.parent;
 	childP = elem.parentNode;
@@ -603,10 +666,21 @@ KIP.Objects.SVGDrawable.prototype.Draw = function (parent, w, h, view) {
  * @param {SVGElement} elem  The element that we are updating with these style attributes
  */
 KIP.Objects.SVGDrawable.prototype.AssignStyle = function (elem) {
-
-	if (this.fillProperty) this.AssignFillValues(this.fillProperty, elem);
-	if (this.lineProperty) this.AssignStrokeValues(this.lineProperty, elem);
-	if (this.fontProperty) this.AssignFontValues(this.fontProperty, elem);
+	"use strict";
+	var styles, tmp, key;
+	styles = {};
+	tmp = [];
+	if (this.fillProperty) this.AssignFillValues(this.fillProperty, elem, styles);
+	if (this.lineProperty) this.AssignStrokeValues(this.lineProperty, elem, styles);
+	if (this.fontProperty) this.AssignFontValues(this.fontProperty, elem, styles);
+	
+	for (key in styles) {
+		if (styles.hasOwnProperty(key)) {
+			tmp.push(key + " : " + styles[key]);
+		}
+	}
+	
+	elem.setAttribute("style", tmp.join(";"));
 };
 
 // SVGDrawable.AssignFontValues
@@ -624,13 +698,14 @@ KIP.Objects.SVGDrawable.prototype.AssignStyle = function (elem) {
  *
  * @returns {SVGElement} The element passed in with the style applied
  */
-KIP.Objects.SVGDrawable.prototype.AssignFontValues = function (font, elem) {
+KIP.Objects.SVGDrawable.prototype.AssignFontValues = function (font, elem, styles) {
+	"use strict";
 	if (!font) return elem;
-	if (font.size) elem.style.fontSize = font.size + "px";
-	if (font.family) elem.style.fontFamily = font.family;
-	if (font.weight) elem.style.fontWeight = font.weight;
-	if (font.style) elem.style.fontStyle = font.style;
-	if (font.color) elem.style.fill = font.color;
+	if (font.size) styles["font-size"] = font.size + "px";
+	if (font.family) styles["font-family"] = font.family;
+	if (font.weight) styles["font-weight"] = font.weight;
+	if (font.style) styles["font-style"] = font.style;
+	if (font.color) styles.fill = font.color;
 	return elem;
 };
 
@@ -650,20 +725,27 @@ KIP.Objects.SVGDrawable.prototype.AssignFontValues = function (font, elem) {
  *
  * @return {SVGElement} The element with the new styles applied
  */
-KIP.Objects.SVGDrawable.prototype.AssignStrokeValues = function (stroke, elem) {
+KIP.Objects.SVGDrawable.prototype.AssignStrokeValues = function (stroke, elem, styles) {
 	"use strict";
 
 	if (!stroke || !stroke.type || (stroke.type === "None")) {
-		elem.style.stroke = "None";
+		styles.stroke = "None";
+		styles["stroke-width"] = 0;
 		return elem;
 	}
 
-	if (stroke.color) elem.style.stroke = stroke.color;
-	if (stroke.opacity) elem.style.strokeOpacity = stroke.opacity;
-	if (stroke.width) elem.style.strokeWidth = stroke.width;
+	// Handle dashing of lines
+	if (stroke.type === "dashed") {
+		if (!stroke.dashArray) stroke.dashArray = "1, 5";
+		elem.setAttribute("stroke-dasharray", stroke.dashArray);
+	}
 
-	if (stroke.lineCap) elem.style.strokeLinecap = stroke.lineCap;
-	if (stroke.lineJoin) elem.style.strokeLinejoin = stroke.lineJoin;
+	if (stroke.color) styles.stroke = stroke.color;
+	if (stroke.opacity) styles["stroke-opacity"] = stroke.opacity;
+	if (stroke.width || (stroke.width === 0)) styles["stroke-width"] = stroke.width;
+
+	if (stroke.lineCap) styles["stroke-linecap"] = stroke.lineCap;
+	if (stroke.lineJoin) styles["stroke-linejoin"] = stroke.lineJoin;
 
 	return elem;
 };
@@ -680,16 +762,16 @@ KIP.Objects.SVGDrawable.prototype.AssignStrokeValues = function (stroke, elem) {
  *
  * @param {SVGElement} elem The element to apply the style changes to
  */
-KIP.Objects.SVGDrawable.prototype.AssignFillValues = function (fill, elem) {
-
+KIP.Objects.SVGDrawable.prototype.AssignFillValues = function (fill, elem, styles) {
+	"use strict";
 	if (!fill || !fill.type || (fill.type === "None")) {
-		elem.style.fill = "None";
+		styles.fill = "None";
 		return elem;
 	}
 
-	if (fill.color) elem.style.fill = fill.color;
-	if (fill.opacity) elem.style.fillOpacity = fill.opacity;
-	if (fill.url) elem.style.fill = "url(" + fill.url + ")";
+	if (fill.color) styles.fill = fill.color;
+	if (fill.opacity) styles["fill-opacity"] = fill.opacity;
+	if (fill.url) styles.fill = "url(" + fill.url + ")";
 	return elem;
 };
 
@@ -757,6 +839,7 @@ KIP.Objects.SVGDrawable.prototype.SetProperties = function (propCollection, newP
  */
 KIP.Objects.SVGDrawable.prototype.AdjustSize = function (w, h, view) {
 	"use strict";
+	var tmp_w, tmp_h;
 
 	// Set the width attribute if we need to
 	if (w && (this.w !== w)) {
@@ -767,6 +850,24 @@ KIP.Objects.SVGDrawable.prototype.AdjustSize = function (w, h, view) {
 	// Set the height attribute if we need to
 	if (h && (this.h !== h)) {
 		this.h = h || this.h;
+		this.div.setAttribute("height", this.h);
+	}
+
+	// If we got a height with no width, we want to make sure that we store an appropriate width internally
+	if (h && !w) {
+		tmp_w = (this.max_x - this.min_x);
+		tmp_h = (this.max_y - this.min_y);
+
+		this.w = (tmp_w * this.h) / tmp_h;
+		this.div.setAttribute("width", this.w);
+	}
+
+	// If we got a width with no height, we want to make sure that we store an appropriate height internally
+	if (w && !h) {
+		tmp_w = (this.max_x - this.min_x);
+		tmp_h = (this.max_y - this.min_y);
+
+		this.h = (tmp_h * this.w) / tmp_w;
 		this.div.setAttribute("height", this.h);
 	}
 
@@ -808,6 +909,11 @@ KIP.Objects.SVGDrawable.prototype.CreateGroup = function (id, grp) {
 
 // SVGDrawable.SetAttribute
 //-----------------------------------------------------------------------
+/**
+ * Sets an attribute on the SVG element
+ * @param	{string} key - What attribute to set
+ * @param {string} value - What to set the attribute to
+ */
 KIP.Objects.SVGDrawable.prototype.SetAttribute = function (key, value) {
 	"use strict";
 	this.div.setAttribute(key, value);
@@ -815,6 +921,9 @@ KIP.Objects.SVGDrawable.prototype.SetAttribute = function (key, value) {
 
 // SVGDrawable.Clear
 //-----------------------------------------------------------------------
+/**
+ * Removes all elements from the SVG canvas
+ */
 KIP.Objects.SVGDrawable.prototype.Clear = function () {
 	"use strict";
 	var elem, idx;
@@ -833,11 +942,18 @@ KIP.Objects.SVGDrawable.prototype.Clear = function () {
  */
 KIP.Objects.SVGDrawable.prototype.Zoom = function (amt) {
 	"use strict";
-	var ratio = (window.innerWidth / window.innerHeight);
-	this.viewX -= (amt * ratio);
-	this.viewY -= amt;
-	this.viewW += (2 * amt * ratio);
-	this.viewH += (2 * amt);
+	var xUnit, yUnit;
+	
+	// Calculate the ratio of the SVG drawing
+	xUnit = this.viewW;
+	yUnit = this.viewH;
+	
+	// Adjust the view parameters
+	this.viewX -= (amt * xUnit);
+	this.viewY -= (amt * yUnit);
+	this.viewW += (2 * amt * xUnit);
+	this.viewH += (2 * amt * yUnit);
+	
 	this.view = this.CreateView();
 	this.div.setAttribute("viewBox", this.view);
 };
@@ -860,14 +976,14 @@ KIP.Objects.SVGDrawable.prototype.Pan = function (panX, panY) {
 // SVGDrawable.CalculateScreenCoordinates
 //-------------------------------------------------------------------------------
 /**
- * Calculates where a provided SVG-based point actually appears on the ysicial screen
+ * Calculates where a provided SVG-based point actually appears on the physical screen
  *
  * @param {number} x - THe x coordinate in the SVG view
  * @param {number} y - The y coordinate in the SVG view
  *
  * @returns {Object} Object containing new x & y values
  */
-KIP.Objects.SVGDrawable.prototype.CalculateScreenCoordinates = function (x, y) {
+KIP.Objects.SVGDrawable.prototype.CalculateScreenCoordinates = function (x, y, global) {
 	"use strict";
 	var xRatio, yRatio, left, top, newX, newY;
 
@@ -876,10 +992,15 @@ KIP.Objects.SVGDrawable.prototype.CalculateScreenCoordinates = function (x, y) {
 	//if ((y < this.viewY) || (y > (this.viewY + this.viewH))) return {x: NaN, y: NaN};
 
 	// Grab proportions from parent if we can
-	if (this.parent) {
+	if (this.parent && global) {
+		left = KIP.Functions.GlobalOffsetLeft(this.div);
+		top = KIP.Functions.GlobalOffsetTop(this.div);
+	
+		// Get the offset of just the direct parent
+	} else if (this.parent) {
 		left = this.parent.offsetLeft;
 		top = this.parent.offsetTop;
-
+	
 	// Otherwise, just use the window properties
 	} else {
 		left = 0;
@@ -945,6 +1066,16 @@ KIP.Objects.SVGDrawable.prototype.CalculateSVGHeight = function (h) {
 	return h * yRatio;
 }
 
+KIP.Objects.SVGDrawable.prototype.CalculateScreenWidth = function (w) {
+	"use strict";
+	var xRatio = this.w / this.viewW;
+	return w * xRatio;
+}
+
+KIP.Objects.SVGDrawable.prototype.CalculateScreenHeight = function (h) {
+	var yRatio = this.h / this.viewH ;
+	return h * yRatio;
+}
 
 
 // SVGDrawable.CreateGradient
@@ -1038,7 +1169,7 @@ KIP.Objects.SVGDrawable.prototype.CreatePattern = function (type, id) {
 	div = 100;
 	if (type === "stipple") {
 		id = id || "stipple";
-		pat = this.StipplePattern(this.viewW / 100, this.viewH / 100, id);
+		pat = this.StipplePattern(10, 10, id);
 	}
 
 	// Remove any previous elements with this name
@@ -1059,31 +1190,36 @@ KIP.Objects.SVGDrawable.prototype.StipplePattern = function (width, height, id) 
 	"use strict";
 	var x, y, circ, pattern, rx, ry, cx, cy;
 
-	pattern = KIP.Functions.CreateSVGElem("pattern", {id: id || "stipple"});
+	pattern = KIP.Functions.CreateSVGElem("pattern", {id: id || "stipple",x: 0, y: 0, height: .25, width: .25});
+	pattern.setAttribute("patternTransform","translate(0,0) scale(10, 10)");
+	pattern.setAttribute("patternUnits", "userSpaceOnUse");
 
-	// Loop through a 4x4 grid to get the right effect
-	for (x = 0; x < 4; x += 1) {
-		for (y = 0; y < 4; y += 1) {
+	// Grab the appropriate radii
+	rx = (width / 5);
+	ry = (height / 5);
 
-			// Grab the appropriate radii
-			rx = (width / 5);
-			ry = (height / 5);
+	// Grab the appropriate center point
+	cx = (rx / 2);
+	cy = (ry / 2);
 
-			// Grab the appropriate center point
-			cx = ((width / 4) * x) + (rx / 2);
-			cy = ((height / 4) * y) + (ry / 2);
-
-			// Create the circle and add it to the pattern
-			circ = KIP.Functions.CreateSVGElem("circle", {rx: rx, ry: ry, cx: cx, cy: cy});
-			pattern.appendChild(circ);
-		}
-	}
+	// Create the circle and add it to the pattern
+	circ = KIP.Functions.CreateSVGElem("circle", {rx: rx, ry: ry, cx: cx, cy: cy});
+	this.AssignStyle(circ);
+	pattern.appendChild(circ);
 
 	return pattern;
 };
 
 // SVGDrawable.RotateElement
 //--------------------------------------------------------------------------------
+/**
+ * Rotates a provided element by some number of degrees around a certain point.
+ * @param {SVGElement} elem - The element to rotate
+ * @param {number} deg - The number of degrees to rotate the element
+ * @param {object} point - The point around whuch the rotation should occur.
+ * @param {number} point.x - The x coordinate to rottate around
+ * @param {number} point.y - The y coordinate to rotate around
+ */
 KIP.Objects.SVGDrawable.prototype.RotateElement = function (elem, deg, point) {
 	"use strict";
 	var box;
@@ -1099,10 +1235,19 @@ KIP.Objects.SVGDrawable.prototype.RotateElement = function (elem, deg, point) {
 	return elem;
 };
 
+// SVGDrawable.AddShape
+//------------------------------------------------------------------------
+/**
+ * Draws a predetermined shape as an SVG. Used for stencil shapes.
+ * Currently only supports a check mark or an "x"
+ * @param {string} type - The type of shape to add. Currently supports "check", "x", "plus"
+ * @param {object} [attr] - ANy additional atributes to be added to the shape
+ * @param {SVGElement} [grp] - The SVG group to add this to
+ */
 KIP.Objects.SVGDrawable.prototype.AddShape = function (type, attr, grp) {
 	"use strict";
 	var ret
-	// Only type currently supported is "check" & "x"
+	// Only types currently supported is "check", "x", "plus"
 	
 	// Checkmark
 	if (type === "check") {
@@ -1141,6 +1286,28 @@ KIP.Objects.SVGDrawable.prototype.AddShape = function (type, attr, grp) {
 				{x: 0.25, y: 2.9},
 				
 				{x: 1.33, y: 1.75}
+			],
+			attr,
+			grp
+		);
+	} else if (type === "plus") {
+		ret = this.AddPath(
+			[
+				{x: 2, y: 2},
+				{x: 2, y: 0},
+				{x: 3, y: 0},
+				
+				{x: 3, y: 2},
+				{x: 5, y: 2},
+				{x: 5, y: 3},
+				
+				{x: 3, y: 3},
+				{x: 3, y: 5},
+				{x: 2, y: 5},
+				
+				{x: 2, y: 3},
+				{x: 0, y: 3},
+				{x: 0, y: 2}
 			],
 			attr,
 			grp

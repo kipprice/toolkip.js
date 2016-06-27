@@ -9,14 +9,16 @@
  *	Finds the difference in days between two date objects
  *	@param {Date} a - The first date to compare
  *	@param {Date} b - The second date to compare
- *	@param {Boolean} signed - If true, will take the difference in order passed in
- *	@param {Boolean} ms - If true, will take the ms difference instead of the day difference
+ *	@param {Boolean} [signed] - If true, will take the difference in order passed in
+ *	@param {Boolean} [milli] - If true, will take the ms difference instead of the day difference
+ *  @param {boolean} [inclusive] - If true, returns a value in milliseconds even if milliseconds weren't compared
  **/
 KIP.Functions.DateDiff = function (a, b, signed, milli, inclusive) {
 	"use strict";
 	var ms, diff, dir;
 	ms = (1000 * 60 * 60 * 24);
 	
+	// Make sure we are accurately rounding dates
 	if (!milli) {
 		a.setHours(0);
 		a.setMilliseconds(0);
@@ -45,6 +47,23 @@ KIP.Functions.DateDiff = function (a, b, signed, milli, inclusive) {
 
 	return diff;
 };
+
+KIP.Functions.GetToday = function (includeTime) {
+	"use strict";
+	var ret;
+	
+	ret = new Date();
+	
+	if (includeTime) return ret;
+	
+	// Clear out time data
+	ret.setHours(0);
+	ret.setMilliseconds(0);
+	ret.setMinutes(0);
+	ret.setSeconds(0);
+	
+	return ret;
+}
 
 KIP.Functions.BusinessDateDiff = function (a, b, signed, milli, inclusive) {
 	"use strict";
@@ -86,6 +105,40 @@ KIP.Functions.ShortDate = function (dt) {
 	yr = (parseInt(dt.getFullYear()) % 100);
 	return (dt.getMonth() + 1) + "/" + dt.getDate() + "/" + yr;
 };
+
+
+// InputDateFmt
+//-------------------------------------------
+/**
+ * Converts the date into the format used by date inputs
+ * @param {Date} dt - The date to convert
+ */
+KIP.Functions.InputDateFmt = function (dt) {
+	"use strict";
+	var m, d, y;
+	y = dt.getFullYear();
+	
+	m = (dt.getMonth() + 1);
+	if (m < 10) m = "0" + m;
+	
+	d = parseInt(dt.getDate(), 10);
+	if (d < 10) d = "0" + d
+	return (dt.getFullYear() + "-" + m + "-" + d);
+}
+
+// InputToDate
+//-------------------------------------------
+/**
+ * Takes a string returned by an input field for a date and converts it to a JS date
+ * @param {string} iDt - The date string to convert
+ */
+KIP.Functions.InputToDate = function (iDt) {
+	"use strict";
+	var arr;
+	arr = iDt.split("-");
+
+	return new Date(+arr[0], +arr[1] - 1, +arr[2]);
+}
 
 /**
  * Gets the display string of the time in a short format (HH:MM)

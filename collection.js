@@ -53,7 +53,7 @@ KIP.Objects.Collection.prototype.AddElement = function (key, value, idx, replace
 	
 	// Push the data into our regular index array
 	if (!idx && (idx !== 0)) {
-		idx = this.data.push(elem);
+		idx = (this.data.push(elem) - 1);
 	} else {
 		this.data.splice(idx, 0, elem);
 		loop = true;
@@ -163,8 +163,8 @@ KIP.Objects.Collection.prototype.GetElement = function (key, idx) {
 		return null;
 	}
 	
-	// Otherwise, return the value
-	return this.data[idx].value;
+	// Otherwise, return the item
+	return this.data[idx];
 };
 	
 // Collection.GetElementByIdx
@@ -308,3 +308,17 @@ KIP.Objects.Collection.prototype.DoesElementExist = function (key) {
 	// Return whether there is actually data
 	return !!this.data[idx];
 };
+
+KIP.Objects.Collection.prototype.Sort = function (func) {
+	"use strict";
+	var copy;
+	
+	// Make a shallow copy of the data array
+	copy = this.data.slice();
+	
+	// Sort the copy
+	copy = copy.sort(func);
+	
+	// Return the copied array
+	return copy;
+}

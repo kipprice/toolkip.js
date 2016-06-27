@@ -38,12 +38,13 @@ KIP.Objects.Drawable.prototype.AppendChild = function (child, parent, position) 
   if (!position && (position !== 0)) {
     position = this.children.length;
   }
-	
+
 	// Set the appropriate parent
 	parent = parent || this.div;
 
 	// Save the data into our array
   this.children.splice(position, 0, {child: child, parent: parent});
+	
 };
 
 // Drawable.AddSibling
@@ -55,7 +56,7 @@ KIP.Objects.Drawable.prototype.AppendChild = function (child, parent, position) 
  */
 KIP.Objects.Drawable.prototype.AddSibling = function (sibling, before) {
   "use strict";
-  
+
   if (before) {
     this.elderSiblings.push(sibling);
   } else {
@@ -65,7 +66,7 @@ KIP.Objects.Drawable.prototype.AddSibling = function (sibling, before) {
 
 KIP.Objects.Drawable.prototype.RemoveSibling = function (sibling) {
   "use strict";
-  
+
   // Quit if the child is nothing
   if (!sibling) return false;
 
@@ -73,15 +74,15 @@ KIP.Objects.Drawable.prototype.RemoveSibling = function (sibling) {
   if (!this.elderSiblings || !this.youngerSiblings) {
     return false;
   }
-  
+
   if (!this.RemoveElem(sibling, this.elderSiblings)) {
     if (this.RemoveElem(sibling, this.youngerSiblings)) {
       return sibling;
     }
   }
-  
+
   return false;
-  
+
 };
 
 KIP.Objects.Drawable.prototype.RemoveElementByIdx = function (idx, arr) {
@@ -89,9 +90,9 @@ KIP.Objects.Drawable.prototype.RemoveElementByIdx = function (idx, arr) {
   var elem;
   // Return false if the index is out of bound
 	if ((idx < 0) || (idx > arr.length)) {
-		return false;		
-	} 
-	
+		return false;
+	}
+
 	elem = arr[idx];
 	arr.splice(idx, 1);
 
@@ -99,7 +100,7 @@ KIP.Objects.Drawable.prototype.RemoveElementByIdx = function (idx, arr) {
   if (elem.parentNode) {
     elem.parentNode.removeChild(elem);
   }
-	
+
 	// Otherwise, call the erase function
 	if (elem.Draw) {
 		elem.Erase();
@@ -109,7 +110,7 @@ KIP.Objects.Drawable.prototype.RemoveElementByIdx = function (idx, arr) {
 KIP.Objects.Drawable.prototype.RemoveElem = function (element, arr) {
   "use strict";
   var idx;
-  
+
   // Remove the child from our children array
   for (idx = 0; idx < arr.length; idx += 1) {
     if (arr[idx] === element) {
@@ -129,7 +130,7 @@ KIP.Objects.Drawable.prototype.RemoveChild = function (child) {
   "use strict";
 
   var idx;
-	
+
 	// Quit if child is nothing
 	if (!child) return false;
 
@@ -142,7 +143,7 @@ KIP.Objects.Drawable.prototype.RemoveChild = function (child) {
   if (this.RemoveElem(child, this.children)) {
     return child;
   }
-	
+
 	// If we got this far, we must have failed to find anything
 	return false;
 };
@@ -150,7 +151,7 @@ KIP.Objects.Drawable.prototype.RemoveChild = function (child) {
 /**
  * Removes a child by its index from a Drawable
  * @param {number} idx - The index to remove from our array
- * @param {boolean} 
+ * @param {boolean}
  */
 KIP.Objects.Drawable.prototype.RemoveChildByIdx = function (idx) {
 	"use strict";
@@ -160,7 +161,7 @@ KIP.Objects.Drawable.prototype.RemoveChildByIdx = function (idx) {
 /**
  * Removes a sibling by its index from a Drawable
  * @param {number} idx - The index to remove from our array
- * @param {boolean} 
+ * @param {boolean}
  */
 KIP.Objects.Drawable.prototype.RemoveSiblingByIdx = function (idx, before) {
 	"use strict";
@@ -169,7 +170,7 @@ KIP.Objects.Drawable.prototype.RemoveSiblingByIdx = function (idx, before) {
   } else {
     return this.RemoveElementByIdx(idx, this.youngerSiblings);
   }
-	
+
 }
 
 /**
@@ -178,7 +179,7 @@ KIP.Objects.Drawable.prototype.RemoveSiblingByIdx = function (idx, before) {
  * @param {boolean} [noErase] - True if the elements shouldn't be erased before drawing
  * @version 1.1
  */
-KIP.Objects.Drawable.prototype.Draw = function (parent, noErase) {
+KIP.Objects.Drawable.prototype.Draw = function (parent, noErase, iBefore) {
   "use strict";
   var i, elem, sibling, that = this;
 
@@ -195,32 +196,36 @@ KIP.Objects.Drawable.prototype.Draw = function (parent, noErase) {
   if (this.elderSiblings && this.elderSiblings.length > 0) {
     for (i = 0; i < this.elderSiblings.length; i += 1) {
       sibling = this.elderSiblings[i];
-      
+
       if (sibling.parentNode && !noErase) {
         sibling.parentNode.removeChild(sibling);
       }
-      
+
       this.parent.appendChild(sibling);
     }
   }
-  
+
   // Remove the div that exists, if it does
   if (this.div.parentNode && !noErase) {
     this.div.parentNode.removeChild(this.div);
   }
 
   // Redraw the div onto the new parent
-  this.parent.appendChild(this.div);
-  
+  if (iBefore) {
+    this.parent.insertBefore(this.div, iBefore);
+  } else {
+    this.parent.appendChild(this.div);
+  }
+
     // Handle post-siblings
   if (this.youngerSiblings && this.youngerSiblings.length > 0) {
     for (i = 0; i < this.youngerSiblings.length; i += 1) {
       sibling = this.youngerSiblings[i];
-      
+
       if (sibling.parentNode && !noErase) {
         sibling.parentNode.removeChild(sibling);
       }
-      
+
       this.parent.appendChild(sibling);
     }
   }
@@ -233,11 +238,11 @@ KIP.Objects.Drawable.prototype.Draw = function (parent, noErase) {
   for (i = 0; i < this.children.length; i += 1) {
 		elem = this.children[i];
     if (elem.child) {
-			
+
 			// Draw it if it's a Drawable
 			if (elem.child.Draw) {
       	elem.child.Draw(elem.parent);
-				
+
 			// Otherwise, just add to the parent
     	} else {
 				if (elem.parentNode && !noErase) {

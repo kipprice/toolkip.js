@@ -4,11 +4,13 @@
  * @param {string} url - The URL to send the request to
  * @param {function} [success] - A function to run if the call succeeds
  * @param {function} [error] - A function to run if the request errors out
- * @param {string} params - An "&" delimited string of "key=value" pairs that can be sent as AJAX
+ * @param {variant} params - An "&" delimited string of "key=value" pairs that can be sent as AJAX or an object with key value pairs
  * @returns {AJAXRequest} - The request that was sent
  */
 KIP.Functions.AJAXRequest = function (type, url, success, error, params){
-  var req = false;
+  var req, key, pOut;
+
+  req = false;
 
   // Try to get an HTML Request
   try {
@@ -43,6 +45,28 @@ KIP.Functions.AJAXRequest = function (type, url, success, error, params){
   if (typeof error !== 'function') {
 		error = function() {};
 	}
+
+  // Make sure we handle both forms of inputs for parameters
+  pOut = "";
+  if ((typeof params) !== (typeof "abc")) {
+    for (key in params) {
+      if (params.hasOwnProperty(key)) {
+
+        // Append the appropriate PHP delimiter
+        if (pOut.length > 0) {
+          pOut += "&";
+        }
+
+        // Make sure we add the key-value pair, properly escaped
+        pOut += (escape(key) + "=" + escape(params[key]));
+
+      }
+    }
+
+    // Save the params as a string to send to the PHP
+    params = pOut;
+  }
+
 
   // When the request is ready to run, try running it.
   req.onreadystatechange = function(){

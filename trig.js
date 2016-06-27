@@ -16,32 +16,46 @@
  * @param {Number} end.x - The ending x position of the line
  * @param {Number} end.y - The ending y position of the line
  * @param {HTMLElement} host - The parent element to draw this line on
+ * @param {string} [lbl] - A label to apply to this 
  *
  * @return {HTMLElement} The line that is drawn
  */
-KIP.Functions.DrawLine = function (start, end, host) {
+KIP.Functions.DrawLine = function (start, end, host, lbl, lblNoRotate) {
 	"use strict";
-	var angle, distance, div;
+	var angle, distance, div, cls, lblElem;
 	distance = KIP.Functions.GetDistance(start, end);
 	angle = KIP.Functions.GetAngle(start, end);
 
+	// Create a CSS class that can be overridden for general options
+	cls = KIP.Functions.CreateCSSClass(".angledLine", {
+		"position" : "absolute",
+		"height" : "1px",
+		"transform-origin" : "0px 0px"
+	});
+	
 	// Create the div and give it minimal styling to show the line
 	div = KIP.Functions.CreateSimpleElement("", "angledLine");
-	div.style.position = "absolute";
 	div.style.left = start.x + "px";
 	div.style.top = start.y + "px";
 
 	// Approriately assign the size of the element
 	div.style.width = distance + "px";
-	div.style.height = "1px";
 
 	// Rotate to our specified degree
-	div.style.transformOrigin = "0px 0px";
 	div.style.transform = "rotate(" + angle + "deg)";
 
 	// Add to the specified parent element
 	host.appendChild(div);
 
+	// If there is also a label, create that
+	if (lbl) {
+		lblElem = KIP.Functions.CreateSimpleElement("", "lbl", lbl);
+		if (lblNoRotate) {
+			lblElem.style.transform = "rotate(" + (-1 * angle) + "deg)";
+			lblElem.style.transformOrigin = "(0, 0)";
+		}
+		div.appendChild(lblElem);
+	}
 	return div;
 };
 
@@ -53,7 +67,7 @@ KIP.Functions.DrawLine = function (start, end, host) {
  *
  * @return {HTMLElement} The line that gets drawn
  */
-KIP.Functions.ConnectElements = function (start_elem, end_elem) {
+KIP.Functions.ConnectElements = function (start_elem, end_elem, lbl, lblNoRotate) {
 	"use strict";
 	var start_point, end_point, x_1, x_2, y_1, y_2, parent;
 
@@ -70,7 +84,7 @@ KIP.Functions.ConnectElements = function (start_elem, end_elem) {
 	start_point = {x : x_1, y : y_1};
 	end_point = { x : x_2, y : y_2};
 
-	return KIP.Functions.DrawLine(start_point, end_point, parent);
+	return KIP.Functions.DrawLine(start_point, end_point, parent, lbl, lblNoRotate);
 };
 
 /**
@@ -135,4 +149,21 @@ KIP.Functions.GetAngle = function (start, end) {
 KIP.Functions.DegreesToRadians = function (deg) {
 	var result = ((Math.PI*deg) / 180);
 	return result;
+}
+
+KIP.Functions.Contained = function (pt, rect) {
+	"use strict";
+	if (rect.bottom || rect.top || rect.left || rect.right) {
+		if (pt.x < rect.left) return false;
+		if (pt.x > rect.right) return false;
+		if (pt.y < rect.top) return false;
+		if (pt.y > rect.bottom) return false;
+	} else {
+		if (pt.x < rect.x) return false;
+		if (pt.x > (rect.x + rect.width)) return false;
+		if (pt.y < rect.y) return false;
+		if (pt.y > (rect.y + rect.height)) return false;
+	}
+	
+	return true;
 }
