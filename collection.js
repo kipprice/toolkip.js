@@ -10,6 +10,7 @@ KIP.Objects.Collection = function () {
 	"use strict";
 	this.data = [];
 	this.backData = {};
+	this.sortedData;
 };
 
 // Collection.Length
@@ -309,6 +310,13 @@ KIP.Objects.Collection.prototype.DoesElementExist = function (key) {
 	return !!this.data[idx];
 };
 
+// Collection.Sort
+//----------------------------------------------------------
+/**
+ * Sorts the data contained in our collection
+ * @param {function} func - The funcion by which to sort
+ * @returns {array} An array containing the sorted version of this collection
+ */
 KIP.Objects.Collection.prototype.Sort = function (func) {
 	"use strict";
 	var copy;
@@ -318,7 +326,9 @@ KIP.Objects.Collection.prototype.Sort = function (func) {
 	
 	// Sort the copy
 	copy = copy.sort(func);
+
+	this.sortedData = copy;
 	
 	// Return the copied array
 	return copy;
-}
+};
