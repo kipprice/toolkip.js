@@ -14,9 +14,9 @@
  * Creates an SVG image that can have various elements added to it
  * @param {String} id - The unique identifier to apply to this SVG image
  */
-KIP.Objects.SVGDrawable = function (id, preventEvents) {
+KIP.Objects.SVGDrawable = function (id, preventEvents, options) {
 	"use strict";
-	this.div = KIP.Functions.CreateSVG(id);
+	this.div = KIP.Functions.CreateSVG(id, "", "", "", "", options && options.aspect);
 	this.elements = [];
 	this.elementsByID = [];
 
@@ -45,6 +45,13 @@ KIP.Objects.SVGDrawable = function (id, preventEvents) {
 	if (preventEvents) return;
 	this.div.style.cursor = "-webkit-grab";
 	var that = this;
+	
+	// Handle event options (long term this should handle all options)
+	this.options = options || {};
+	if (this.options.zoomX === undefined) this.options.zoomX = !preventEvents;
+	if (this.options.zoomY === undefined) this.options.zoomY = !preventEvents;
+	if (this.options.panX === undefined) this.options.panX = !preventEvents;
+	if (this.options.panY === undefined) this.options.panY = !preventEvents;
 
 	// Handle the scroll wheel event for the SVG
 	this.div.addEventListener("wheel", function (e) {
@@ -108,7 +115,7 @@ KIP.Objects.SVGDrawable.prototype = Object.create(KIP.Objects.Drawable.prototype
 /**
  * Calculates what the view box should be to encompass all of the elements currently in the SVG drawing
  */
-KIP.Objects.SVGDrawable.prototype.CalculateView = function () {
+KIP.Objects.SVGDrawable.prototype.CalculateView = function (setHTML) {
 	"use strict";
 
 	// Set the appropriate view variables
@@ -117,17 +124,22 @@ KIP.Objects.SVGDrawable.prototype.CalculateView = function () {
 	this.viewW = (this.max_x - this.min_x);
 	this.viewH = (this.max_y - this.min_y);
 
-	return this.CreateView();
+	return this.CreateView(setHTML);
 };
 
 // SVGDrawable.CreateView
 //---------------------------------------------------------------
-KIP.Objects.SVGDrawable.prototype.CreateView = function () {
+KIP.Objects.SVGDrawable.prototype.CreateView = function (setHTML) {
 	"use strict";
+	var out;
 	this.viewW = (this.viewW < 0) ? 1 : this.viewW;
 	this.viewH = (this.viewH < 0) ? 1 : this.viewH;
-	return this.viewX + " " + this.viewY + " " + this.viewW + " " + this.viewH;
-}
+	out = this.viewX + " " + this.viewY + " " + this.viewW + " " + this.viewH;
+	
+	if (setHTML) this.div.setAttribute("viewBox", out);
+	
+	return out;
+};
 
 // SVGDrawable.AddRectangle
 //-----------------------------------------------------------------------------------
@@ -949,10 +961,15 @@ KIP.Objects.SVGDrawable.prototype.Zoom = function (amt) {
 	yUnit = this.viewH;
 	
 	// Adjust the view parameters
-	this.viewX -= (amt * xUnit);
-	this.viewY -= (amt * yUnit);
-	this.viewW += (2 * amt * xUnit);
-	this.viewH += (2 * amt * yUnit);
+	if (this.options.zoomX) {
+		this.viewX -= (amt * xUnit);
+		this.viewW += (2 * amt * xUnit);
+	}
+	
+	if (this.options.zoomY) {
+		this.viewY -= (amt * yUnit);
+		this.viewH += (2 * amt * yUnit);
+	}
 	
 	this.view = this.CreateView();
 	this.div.setAttribute("viewBox", this.view);
@@ -967,8 +984,13 @@ KIP.Objects.SVGDrawable.prototype.Zoom = function (amt) {
  */
 KIP.Objects.SVGDrawable.prototype.Pan = function (panX, panY) {
 	"use strict";
-	this.viewX += panX;
-	this.viewY += panY;
+	
+	if (this.options.panX) {
+		this.viewX += panX;
+	}
+	if (this.options.panY) {
+		this.viewY += panY;
+	}
 	this.view = this.CreateView();
 	this.div.setAttribute("viewBox", this.view);
 };
@@ -1013,8 +1035,8 @@ KIP.Objects.SVGDrawable.prototype.CalculateScreenCoordinates = function (x, y, g
 	newX = xRatio * (x - this.viewX) + left;
 	newY = yRatio * (y - this.viewY) + top;
 
-	newX = Math.floor(newX);
-	newY = Math.floor(newY);
+	newX =(newX|newX)
+	newY =(newY|newY);
 
 	return {x: newX, y: newY};
 };

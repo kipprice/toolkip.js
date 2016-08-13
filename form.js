@@ -13,7 +13,7 @@
  * @returns {Form} The created form
  * @class Form
  */
-KIP.Objects.Form = function (id, title, btns, saveCb, hideOverlay) {
+KIP.Objects.Form = function (id, title, btns, saveCb, hideOverlay, embedded) {
   "use strict";
   this.id = id;
   this.title = title || "Options";
@@ -21,6 +21,7 @@ KIP.Objects.Form = function (id, title, btns, saveCb, hideOverlay) {
   this.btns = btns || [];
   this.saveCb = saveCb || function () {};
   this.fields = new KIP.Objects.Collection();
+  this.embedded = embedded || false;
 
   this.showOverlay = !hideOverlay;
   this.standardStyle = true;
@@ -62,13 +63,15 @@ KIP.Objects.Form.prototype.CreateOverlay = function () {
   "use strict";
   var that = this;
 
+   if (!this.showOverlay) return;
+  
   // Create & add the overlay as a sibling to the form
   this.overlay = KIP.Functions.CreateSimpleElement("", "overlay");
   this.overlay.addEventListener("click", function () {
     that.CloseForm();
-  })
+  });
   this.AddSibling(this.overlay);
-}
+};
 
 // Form.CreateBtnBar
 //----------------------------------------------------------
@@ -94,7 +97,7 @@ KIP.Objects.Form.prototype.CreateBtnBar = function (btns) {
       elem.style.backgroundColor = data.color;
     }
     return elem;
-  }
+  };
 
   // Go through each of the provided buttons & create them
   for (idx = 0; idx < this.btns.length; idx += 1) {
@@ -106,14 +109,21 @@ KIP.Objects.Form.prototype.CreateBtnBar = function (btns) {
       btn.click = function () {
         that.Save();
         that.CloseForm();
-      }
+      };
+    }
+    
+    
+    if ((btn.lbl === "Apply" || (btn.lbl === "Add")) && !btn.click) {
+      btn.click = function () {
+        that.Save();
+      };
     }
 
     // Default in some actions for the "Cancel" case
     if ((btn.lbl === "Cancel") && !btn.click) {
       btn.click = function () {
         that.CloseForm();
-      }
+      };
     }
 
     // Add the actions to the button
@@ -134,10 +144,12 @@ KIP.Objects.Form.prototype.CreateElements = function () {
   "use strict";
 
   // Create semi-opaque layer to sit behind the form
-  this.CreateOverlay();
+  if (this.showOverlay && !this.embedded) {
+    this.CreateOverlay();
 
-  // Create the top bar of the form
-  this.CreateTitleBar();
+    // Create the top bar of the form
+    this.CreateTitleBar();
+  }
 
   // Create the areas where the form will actually display data
   this.CreateContent();
@@ -145,7 +157,7 @@ KIP.Objects.Form.prototype.CreateElements = function () {
   // Create the bottom bar of buttons
   this.CreateBtnBar();
 
-}
+};
 
 // Form.CreateContent
 //-------------------------------------------------------
@@ -194,7 +206,7 @@ KIP.Objects.Form.prototype.CreateSection = function (id, header, columnNum) {
     colNum: columnNum,
     rowNum: 0,
     id: id
-  }
+  };
 
   // Set up the hierarchy & add to our HTML
   if (secHeader) {
@@ -204,7 +216,8 @@ KIP.Objects.Form.prototype.CreateSection = function (id, header, columnNum) {
   this.content.appendChild(sec);
   this.currentSection = tIdx;
 
-}
+  return tIdx;
+};
 
 // Form.AddField
 //---------------------------------------------------------------------------------------
@@ -217,7 +230,7 @@ KIP.Objects.Form.prototype.CreateSection = function (id, header, columnNum) {
  * @param {string} lblPosition Where the label for the field should be positioned
  * @returns {HTMLElement} The created field
  */
-KIP.Objects.Form.prototype.AddField = function (id, field, position, lbl, lblPosition) {
+KIP.Objects.Form.prototype.AddField = function (id, field, position, lbl, lblPosition, original) {
   "use strict";
 
   // Default label position to be the same as the regular position
@@ -234,7 +247,8 @@ KIP.Objects.Form.prototype.AddField = function (id, field, position, lbl, lblPos
   if (field) {
     this.fields.AddElement(id, {
       "elem": field,
-      "id": id
+      "id": id,
+      "resetValue" : original
     });
   }
 
@@ -249,7 +263,7 @@ KIP.Objects.Form.prototype.AddField = function (id, field, position, lbl, lblPos
 //-----------------------------------------------------------
 KIP.Objects.Form.prototype.AddHeader = function (txt, cls) {
   "use strict";
-}
+};
 
 // Form.AddElement
 //----------------------------------------------------------------------
@@ -267,7 +281,7 @@ KIP.Objects.Form.prototype.AddElement = function (element, position) {
     position = {
       table: (this.currentSection || (this.tables.length - 1)),
       col: 0
-    }
+    };
   } else {
 
     // Table defaults: first current section, then last added
@@ -279,7 +293,7 @@ KIP.Objects.Form.prototype.AddElement = function (element, position) {
     }
 
     // Column defaults to 0
-    position.column = position.column || 0;
+    position.col = position.col || 0;
   }
 
   // Positions are now objects with a specified table & column
@@ -320,7 +334,7 @@ KIP.Objects.Form.prototype.AddElement = function (element, position) {
   this.tables[table].rowNum = rowNum;
   this.tables[table].data = tableData;
 
-}
+};
 
 // Form.AddTextInput
 //--------------------------------------------------------------------------------------
@@ -335,6 +349,49 @@ KIP.Objects.Form.prototype.AddElement = function (element, position) {
 KIP.Objects.Form.prototype.AddTextInput = function (id, txt, position, ghostTxt, lbl) {
   "use strict";
   return this.AddInput(id, "text", txt, [{key: "placeholder", val: ghostTxt}], lbl, "", position, position);
+};
+
+// Form.AddSelectInput
+//---------------------------------------------------------------------------------------------------------
+/**
+ * Creates a select element in the form
+ */
+KIP.Objects.Form.prototype.AddSelectInput = function (id, options, value, position, lbl, lblPosition) {
+  "use strict";
+  var sl, lblElem, opts, oIdx, opt;
+  
+  opts = [];
+  
+  for (oIdx = 0; oIdx < options.length; oIdx += 1) {
+    opt = options[oIdx];
+    
+    opt = KIP.Functions.CreateElement({
+      type: "option",
+      id: opt.id || (id + "-opt" + oIdx),
+      attr: {
+        "value": opt.value,
+        "label": opt.lbl || opt.value
+      }
+    });
+    opts.push(opt);
+  }
+  
+  // Create the select element
+  sl = KIP.Functions.CreateElement({
+    type: "select",
+    children: opts,
+    id: id,
+    attr: {
+      "value":  value
+    }
+  });
+  
+  // Add the label if appropriate
+  if (lbl) {
+    lblElem = KIP.Functions.CreateSimpleElement(id + "lbl", "lbl", lbl);
+  }
+  
+  return this.AddField(id, sl, position, lblElem, lblPosition, value);
 };
 
 // Form.AddExpandingInput
@@ -396,7 +453,7 @@ KIP.Objects.Form.prototype.AddExpandingInput = function (id, subID, type, positi
 //-----------------------------------------------------------------------------------------------------------------------------------------
 /* Creates a table that expands when the user adds details */
 KIP.Objects.Form.prototype.AddExpandingInputTable = function (ids, subID, types, positions, values, attrs, lbls, classes, addlListeners) {
-  "use strict"
+  "use strict";
   var c, field, that, changeCb, blurCb, cb;
   that = this;
 
@@ -408,7 +465,7 @@ KIP.Objects.Form.prototype.AddExpandingInputTable = function (ids, subID, types,
       that.AddExpandingInputTable(ids, subID + 1, types, positions, values, attrs, lbls, classes, addlListeners);
     }
     this.focus();
-  }
+  };
 
   // Function for removing empy rows
   blurCb = function () {
@@ -431,13 +488,13 @@ KIP.Objects.Form.prototype.AddExpandingInputTable = function (ids, subID, types,
       k = ids[i] + "." + subID;
       that.RemoveField(k);
     }
-  }
+  };
 
   // Loop through the columns we received
   for (c = 0; c < ids.length; c += 1) {
     this.AddExpandingInput(ids[c], subID, types && types[c] || "", positions && positions[c] || 0, values && values[c] || "", attrs && attrs[c] || {}, lbls && lbls[c] || "", classes && classes[c] || "", changeCb, blurCb, addlListeners && addlListeners[c]);
   }
-}
+};
 
 KIP.Objects.Form.prototype.RemoveField = function (id, ignoreContent) {
   "use strict";
@@ -456,7 +513,7 @@ KIP.Objects.Form.prototype.RemoveField = function (id, ignoreContent) {
   this.fields.RemoveElement(id);
 
   return true;
-}
+};
 
 // Form.AddInput
 //-----------------------------------------------------------------------------------------------------------------------------
@@ -493,7 +550,12 @@ KIP.Objects.Form.prototype.AddInput = function (id, type, value, addlAttr, lbl, 
   }
 
   addlAttr.type = type;
-  addlAttr.value = value;
+  
+  if (type === "checkbox" || type === "radio") {
+    addlAttr.checked = value;
+  } else {
+    addlAttr.value = value;
+  }
 
   input = KIP.Functions.CreateElement({
     type: "input",
@@ -507,9 +569,57 @@ KIP.Objects.Form.prototype.AddInput = function (id, type, value, addlAttr, lbl, 
   }
 
   // Add both of these new elements to our form
-  return this.AddField(id, input, position, lblElem, lblPosition);
+  return this.AddField(id, input, position, lblElem, lblPosition, value);
 
+};
+
+KIP.Objects.Form.prototype.AddOrderedList = function (id, columns) {
+  "use strict";
+  
+};
+
+KIP.Objects.Form.prototype.UpdateFieldValue = function (id, value) {
+  "use strict";
+  var fld, f, type;
+  f = this.fields.GetElement(id);
+  if (!f) return;
+  fld = f.value.elem;
+  type = fld.getAttribute(fld, "type");
+  if (type === "checkbox" || type === "radio") {
+    fld.checked = value;
+  } else {
+    fld.value = value;
+  }
 }
+
+KIP.Objects.Form.prototype.UpdateFieldAttribute = function (id, attr, newValue) {
+  "use strict";
+  var fld, f;
+  f = this.fields.GetElement(id);
+  if (!f) return;
+  fld = f.value.elem;
+  fld.setAttribute(attr, newValue);
+}
+
+// Form.Reset
+//-----------------------------------------------
+/**
+ * Clears all fields in the form
+ */
+KIP.Objects.Form.prototype.Reset = function () {
+  "use strict";
+  var fIdx, field, type;
+  for (fIdx = 0; fIdx < this.fields.Length(); fIdx += 1) {
+    field = this.fields.GetElement("", fIdx).value;
+    
+     type = field.elem.getAttribute("type");
+    if (type === "checkbox" || type === "radio") {
+      field.elem.checked = field.resetValue;
+    } else {
+      field.elem.value = field.resetValue;
+    }
+  }
+};
 
 // Form.Save
 //--------------------------------------------------
@@ -518,14 +628,19 @@ KIP.Objects.Form.prototype.AddInput = function (id, type, value, addlAttr, lbl, 
  */
 KIP.Objects.Form.prototype.Save = function () {
   "use strict";
-  var fIdx, field, values;
+  var fIdx, field, values, type;
   values = {};
 
   // Loop through all of our fields
   for (fIdx = 0; fIdx < this.fields.Length(); fIdx += 1) {
-    field = this.fields.GetElement("", fIdx).value;
-
-    values[field.id] = field.elem.value;
+    field = this.fields.GetElement("", fIdx).value; //Pull out of our collection
+    type = field.elem.getAttribute("type");
+    if (type === "checkbox" || type === "radio") {
+      values[field.id] = field.elem.checked;
+    } else {
+      values[field.id] = field.elem.value;
+    }
+    
   }
 
   if (this.saveCb) {
@@ -541,7 +656,7 @@ KIP.Objects.Form.prototype.Save = function () {
 
 KIP.Objects.Form.prototype.CloseForm = function () {
   "use strict";
-  if (this.overlay.parentNode) {
+  if (this.overlay && this.overlay.parentNode) {
     this.overlay.parentNode.removeChild(this.overlay);
   }
 
@@ -570,8 +685,19 @@ KIP.Objects.Form.prototype.AfterDrawChildren = function () {
   */
 KIP.Objects.Form.prototype.ApplyStandardStyles = function () {
   "use strict";
-  var ov, form, input, title, btns, pStyle, lbl, column, cPerc, t, tbl, hd;
+  var ov, form, input, title, btns, pStyle, lbl, column, cPerc, t, tbl, hd, w, l, top, max_w;
 
+  if (this.embedded) {
+    w = "100%";
+    l = "0";
+    top = "0";
+    max_w = "100%";
+  } else {
+    w = "40%";
+    l = "30%";
+    top = "15%";
+    max_w = "80%";
+  }
   // Force parent to have an explicit display
   pStyle = KIP.Functions.GetComputedStyle(this.parent, "position");
   if (pStyle === "static") {
@@ -593,17 +719,18 @@ KIP.Objects.Form.prototype.ApplyStandardStyles = function () {
 
   // form formatting
   form = {
-    "left": "30%",
-    "top": "15%",
+    "left": l,
+    "top": top,
     "background-color": "#FFF",
     "box-shadow" : "1px 1px 13px 4px rgba(0,0,0,.2);",
     "font-family" : "Segoe UI, Calibri, sans",
     "z-index" : "2",
     "position" : "absolute",
     "display" : "block",
-    "max-width": "80%",
+    "max-width": max_w,
     "padding" : "10px",
-    "width" : "40%"
+    "width" : w,
+    "box-sizing" : "border-box"
   };
   form = KIP.Functions.CreateCSSClass(".form", form);
 
@@ -640,12 +767,12 @@ KIP.Objects.Form.prototype.ApplyStandardStyles = function () {
     "font-size": "15px",
     "padding-top" : "2px",
     "padding-right" : "5px"
-  }
+  };
   title = KIP.Functions.CreateCSSClass(".form .titleBar .close", title);
   title = {
     "opacity": "1",
     "cursor" : "pointer"
-  }
+  };
   title = KIP.Functions.CreateCSSClass(".form .titleBar .close:hover", title);
 
   // button bar
@@ -664,12 +791,12 @@ KIP.Objects.Form.prototype.ApplyStandardStyles = function () {
     "font-size" : "15px",
     "opacity" : "0.7",
     "margin" : "5px"
-  }
+  };
   btns = KIP.Functions.CreateCSSClass(".form .btnBar .btn", btns);
   btns = {
       "opacity" : "1",
       "cursor" : "pointer"
-  }
+  };
   btns = KIP.Functions.CreateCSSClass(".form .btnBar .btn:hover", btns);
 
   // Labels

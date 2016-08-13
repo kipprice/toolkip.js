@@ -13,7 +13,7 @@ KIP.Objects.ProjectWindow = function (name, start, end, dim) {
 	var view;
 	this.name = name;
 	this.id = name;
-	this.rowHeight = 5;
+	this.rowHeight = 10;
 	this.rowSpace = 2.5;
 
 	this.unitWidth = 5;
@@ -36,9 +36,11 @@ KIP.Objects.ProjectWindow = function (name, start, end, dim) {
 	this.alwaysShowEvents = false;
 	
 	this.maxHeaderHeight = 40;
+	
+	this.refreshNotify = null;
 
 	this.monthColors = [
-		"37c8ab",
+		"#37c8ab",
 		"#00aad4",
 		"#0066ff",
 		"#3737c8",
@@ -83,8 +85,8 @@ KIP.Objects.ProjectWindow = function (name, start, end, dim) {
 	}
 
 	// Create a SVG canvas for the project items
-	KIP.Objects.SVGDrawable.call(this, this.id);
-
+	KIP.Objects.SVGDrawable.call(this, this.id, "", {aspect: "none", zoomY: false});
+	
 	// Set up the view for the object
 	view = this.Resize();
 
@@ -113,6 +115,7 @@ KIP.Objects.ProjectWindow = function (name, start, end, dim) {
 	this.CreateGuidelines();
 	// Setup the color array for segments
 	this.segmentColors = [];
+
 
 	// Add listener for resizing
 	this.AddWindowListeners(dim);
@@ -154,7 +157,7 @@ KIP.Objects.ProjectWindow.prototype.AddWindowListeners = function (dim) {
 KIP.Objects.ProjectWindow.prototype.Resize = function () {
 	"use strict";
 	var ratio = this.width / this.height;
-	this.viewH = (this.rowHeight * 40);
+	this.viewH = (this.rowHeight * 30);
 	this.viewW = (this.unitWidth * 40 * ratio);
 	this.viewX = 0;
 	this.viewY = 0;
@@ -214,7 +217,13 @@ KIP.Objects.ProjectWindow.prototype.RevertFromProjectPoint = function (pt) {
 KIP.Objects.ProjectWindow.prototype.AddGrouper = function (lbl) {
 	"use strict";
 	
-}
+};
+
+KIP.Objects.ProjectWindow.prototype.AddSpacer = function () {
+	"use strict";
+	this.rows.push("spacer");
+	this.items.push("spacer");
+};
 
 KIP.Objects.ProjectWindow.prototype.CreateExpandedInfo = function (addl) {
 	"use strict";
@@ -225,8 +234,11 @@ KIP.Objects.ProjectWindow.prototype.CreateExpandedInfo = function (addl) {
 		"BottomSegments" : true,
 		"Events" : true,
 		"Design" : true,
-		"ganttItem" : true
-	}
+		"ganttItem" : true,
+		"svgElem": true,
+		"sidebarElem" : true,
+		"groupName" : true
+	};
 	div = KIP.Functions.CreateSimpleElement("", "additionalInfo");
 	
 	if (!this.expandedInfoCB) {
@@ -236,7 +248,7 @@ KIP.Objects.ProjectWindow.prototype.CreateExpandedInfo = function (addl) {
 	}
 	
 	return div;
-}
+};
 
 KIP.Objects.ProjectWindow.prototype.WriteArray = function (arr, before, after, exclude) {
 	"use strict";
@@ -260,7 +272,7 @@ KIP.Objects.ProjectWindow.prototype.WriteArray = function (arr, before, after, e
 	}
 	
 	return ret;
-}
+};
 /**
  * Adds a timeline item to the view
  * 
@@ -271,9 +283,10 @@ KIP.Objects.ProjectWindow.prototype.WriteArray = function (arr, before, after, e
  * @param {object} addl - Any additional details about the item that are worth knowing
  * @returns {SVGElement} The item that was created
  */
-KIP.Objects.ProjectWindow.prototype.AddItem = function (s, e, lbl, segments, addl) {
+KIP.Objects.ProjectWindow.prototype.AddItem = function (s, e, lbl, segments, addl, offset) {
 	"use strict";
-	var idx, item, sIdx, segment, row, y, x, div, start, end, sDt, segHeight, segEnd, ctx, that, sIdx;
+	var idx, item, sIdx, segment, row, y, x, div, start, end, sDt, segHeight, segEnd, ctx, that, sIdx, lastY;
+	
 	that = this;
 
 	// Convert to dates if needed
@@ -304,12 +317,12 @@ KIP.Objects.ProjectWindow.prototype.AddItem = function (s, e, lbl, segments, add
 		id: idx,
 		eventGrp: this.CreateGroup(idx + "|events", this.eventGrp),
 		addl: addl,
-		addlInfoExpanded : this.CreateExpandedInfo(addl)
+		addlInfoExpanded : this.CreateExpandedInfo(addl),
 	};
 
 	// Loop through the segments & draw
 	for (sIdx = 0; sIdx < segments.length; sIdx += 1) {
-		this.CreateSegments(segments[sIdx], item, start, end, row, sIdx);
+		this.CreateSegments(segments[sIdx], item, start, end, item.y, sIdx);
 	}
 	// Create a context menu 
 	item.ctx = this.AddContextMenu(item);
@@ -320,7 +333,7 @@ KIP.Objects.ProjectWindow.prototype.AddItem = function (s, e, lbl, segments, add
 	this.fillProperty.color = "#000";
 	this.fillProperty.opacity = 0.8;
 	this.fontProperty.size = (2 * this.rowHeight / 3);
-	item.text = this.AddText("", lbl + "   " + KIP.Functions.ShortDate(s) + " - " + KIP.Functions.ShortDate(e), this.unitWidth / 2, -1, "", "", item.grp)
+	item.text = this.AddText("", lbl + "   " + KIP.Functions.ShortDate(s) + " - " + KIP.Functions.ShortDate(e), this.unitWidth / 2, -1, "", "", item.grp);
 
 	this.fillProperty.opacity = 1;
 	
@@ -392,7 +405,7 @@ KIP.Objects.ProjectWindow.prototype.GetRowOfItem = function (item) {
  * @param {Array} arr - The segments to create
  * @param {Object} item - The item to add this to
  */
-KIP.Objects.ProjectWindow.prototype.CreateSegments = function (arr, item, start, end, row, segRow) {
+KIP.Objects.ProjectWindow.prototype.CreateSegments = function (arr, item, start, end, startY, segRow) {
 	"use strict";
 	var idx, x, lastX, segEnd, sDt, first;
 
@@ -409,7 +422,16 @@ KIP.Objects.ProjectWindow.prototype.CreateSegments = function (arr, item, start,
 			sDt = new Date(sDt);
 		}
 		segEnd = this.ConvertToProjectPoint(sDt);
-		x = lastX;
+		
+		if (arr[idx].start) {
+			sDt = arr[idx].start;
+			if (!sDt.getYear) {
+				sDt = new Date(sDt);
+			}
+			x = this.ConvertToProjectPoint(sDt);
+		} else {
+			x = lastX;
+		}
 
 		if (!first) {
 			x += 0.5;
@@ -418,8 +440,8 @@ KIP.Objects.ProjectWindow.prototype.CreateSegments = function (arr, item, start,
 		}
 
 		// Try to draw the segment
-		if (segEnd >= lastX) {
-			this.CreateSegment(item, {x: x, y: row}, segEnd, arr[idx], idx, segRow, item);
+		if (segEnd >= x) {
+			this.CreateSegment(item, {x: x, y: startY}, segEnd, arr[idx], idx, segRow, item);
 
 		// Handle the error case of something not actually being a forward rectangle
 		} else {
@@ -439,7 +461,7 @@ KIP.Objects.ProjectWindow.prototype.CreateSegments = function (arr, item, start,
 			x = lastX + 0.5;
 		}
 
-		this.CreateSegment(item, {x: x, y: row}, end, {}, -1, segRow, item);
+		this.CreateSegment(item, {x: x, y: startY}, end, {}, -1, segRow, item);
 	}
 };
 
@@ -460,7 +482,7 @@ KIP.Objects.ProjectWindow.prototype.CreateSegment = function (item, start, end, 
 	var segment, div, y, height, x, width, i, txt;
 	
 	// Adjust the top value as appropriate
-	y = start.y * this.rowHeight * this.rowSpace;
+	y = start.y;
 	height = this.rowHeight * (this.barPercentages[rowNum]);
 
 	if (rowNum > 0) {
@@ -631,6 +653,7 @@ KIP.Objects.ProjectWindow.prototype.AddEvent = function (item, ev, pos, lbl, add
 		event = this.AddRectangle(ev.x, ev.y, this.viewW / 1000, height, {id: "ev." + this.eventCnt}, item.eventGrp);
 	}
 
+	
 	txt = this.AddTextBubble(ev.lbl, event, item, "", "", 0.3);
 	
 	this.lineProperty.type = "None";
@@ -843,6 +866,8 @@ KIP.Objects.ProjectWindow.prototype.AddTextBubble = function (lbl, elem, item, a
 	if (!this.textDiv.parentNode) {
 		this.parent.appendChild(this.textDiv);
 	}
+	
+	if (this.options.noHoverBubbles) return;
 
 	div = KIP.Functions.CreateSimpleElement("txt." + lbl, "textBubble", lbl);
 	div.style.position = "absolute";
@@ -938,8 +963,10 @@ KIP.Objects.ProjectWindow.prototype.AddTextBubble = function (lbl, elem, item, a
  */
 KIP.Objects.ProjectWindow.prototype.CreateGuidelines = function () {
 	"use strict";
-	var num, lIdx, ln, func, relToday, x, dow, today, revDt, w, mult, coordA, coordB, noShow, shortDt, txt, txtColor, box;
+	var num, lIdx, ln, func, relToday, x, dow, today, revDt, w, mult, coordA, coordB, noShow, shortDt, txt, txtColor, box, dIdx;
 
+	
+	
 	// Don't draw lines if they wouldn't show
 	coordA = this.CalculateScreenCoordinates(this.viewX, this.viewY);
 	coordB = this.CalculateScreenCoordinates(this.viewX + (this.unitWidth / 15), this.viewY);
@@ -951,6 +978,9 @@ KIP.Objects.ProjectWindow.prototype.CreateGuidelines = function () {
 	if (this.viewW > (200 * this.unitWidth)) {
 		noShow = true;
 	}
+	
+	// Create headers first
+	this.CreateGuideHeaders(noShow);
 
 	// Remove all old guildelines
 	for (lIdx = this.lines.length - 1; lIdx >= 0; lIdx -= 1) {
@@ -981,10 +1011,30 @@ KIP.Objects.ProjectWindow.prototype.CreateGuidelines = function () {
 		txt = "";
 
 		if (this.importantDates[shortDt]) {
-			w = this.unitWidth;
-			this.fillProperty.color = this.importantDates[shortDt].color;
-			txt = this.importantDates[shortDt].lbl;
-			txtColor = this.importantDates[shortDt].textColor;
+			
+			// Set a variable width for these
+			w = (this.unitWidth / this.importantDates[shortDt].length);
+			
+			for (dIdx = 0; dIdx < this.importantDates[shortDt].length; dIdx += 1) {
+				this.fillProperty.color = this.importantDates[shortDt][dIdx].color;
+			
+				// Show a border if the date is also today
+				if (KIP.Functions.DateDiff(revDt, today) === 0) {
+					this.lineProperty.width = (w / 8);
+					this.lineProperty.color = "#8AE";
+					this.lineProperty.type = "solid";
+				}
+			
+				txt = this.importantDates[shortDt][dIdx].lbl;
+				txtColor = this.importantDates[shortDt][dIdx].textColor;
+				ln = this.AddRectangle(x + (dIdx * w), this.viewY, w, this.viewH, "", this.lineGrp);
+				this.lines.push(ln);
+				
+			}
+			this.lineProperty.type = "none";
+			this.lineProperty.width = 0;
+			this.lineProperty.color = "rgba(0,0,0,0)";
+			continue;
 
 		} else if (KIP.Functions.DateDiff(revDt, today) === 0) {
 			this.fillProperty.color = "#8AE";
@@ -995,18 +1045,26 @@ KIP.Objects.ProjectWindow.prototype.CreateGuidelines = function () {
 			w = this.unitWidth;
 
 		} else if (!this.showWeekends && dow === 1) {
-			if (noShow) continue;
-			this.fillProperty.color =  "rgba(100,100,100,.3)";
-			w = this.unitWidth / 20;
+			//if (noShow) continue;
+			this.fillProperty.color =  "rgba(255,255,255,.4)";
+			this.lineProperty.color = "rgba(100,100,100,.3)"
+			this.lineProperty.type = "solid";
+			this.lineProperty.width = this.unitWidth / 20;
 
 		} else {
-			if (noShow) continue;
-			this.fillProperty.color = "rgba(220,220,220,.4)";
-			w = this.unitWidth / 20;
+			//if (noShow) continue;
+			this.fillProperty.color = "rgba(255,255,255,.4)";
+			this.lineProperty.color = "rgba(220,220,220,.4)";
+			this.lineProperty.type = "solid";
+			this.lineProperty.width = this.unitWidth / 20;
 		}
 
-		ln = this.AddRectangle(x, this.viewY, w, this.viewH, "", this.lineGrp);
+		ln = this.AddRectangle(x, this.viewY, this.unitWidth, this.viewH, {"class": "projectCol", "id": "col" + shortDt}, this.lineGrp);
 		this.lines.push(ln);
+		
+		this.lineProperty.type = "none";
+		this.lineProperty.color = "rgba(0,0,0,0)";
+		this.lineProperty.width = 0;
 
 		// Draw the text for important dates
 		if (txt) {
@@ -1022,7 +1080,7 @@ KIP.Objects.ProjectWindow.prototype.CreateGuidelines = function () {
 		
 	}
 
-	this.CreateGuideHeaders(noShow);
+	
 };
 
 /**
@@ -1030,12 +1088,16 @@ KIP.Objects.ProjectWindow.prototype.CreateGuidelines = function () {
  */
 KIP.Objects.ProjectWindow.prototype.CreateGuideHeaders = function (noNumbers) {
 	"use strict";
-	var num, header, txt, idx, revDt, x, months, mIdx, rect, month, w, maxH, h;
+	var num, header, txt, idx, revDt, x, months, mIdx, rect, month, w, maxH, h, txt, pt;
+	
+	if (!this.textDiv.parentNode && this.parent) {
+		this.parent.appendChild(this.textDiv);
+	}
 	
 	// remove all of the old guide headers
 	for (idx = this.headers.length - 1; idx >= 0; idx -= 1) {
 		if (this.headers[idx] && this.headers[idx].parentNode) {
-			this.headerGrp.removeChild(this.headers[idx]);
+			this.headers[idx].parentNode.removeChild(this.headers[idx]);
 		}
 	}
 
@@ -1062,11 +1124,11 @@ KIP.Objects.ProjectWindow.prototype.CreateGuideHeaders = function (noNumbers) {
 		// Initialize the months index if appropriate
 		if (!months[mIdx]) {
 			months[mIdx] = {
-				name: KIP.Functions.GetMonthName(revDt),
+				name: KIP.Functions.GetMonthName(revDt, true),
 				start: x,
 				month: revDt.getMonth(),
-				year: revDt.getFullYear()
-			}
+				year: revDt.getFullYear().toString()
+			};
 		} else {
 			months[mIdx].end = x;
 		}
@@ -1078,6 +1140,7 @@ KIP.Objects.ProjectWindow.prototype.CreateGuideHeaders = function (noNumbers) {
 		this.fillProperty.color = "#FFF";
 		this.headers.push(this.AddRectangle(x, this.viewY + h, this.unitWidth, (h / 2), "", this.headerGrp));
 		this.fillProperty.color="#68C";
+		this.fontProperty.size = (4 * this.unitWidth / 5);
 		this.headers.push(this.AddText("", revDt.getDate(), x + (this.unitWidth / 4), this.viewY + h, "", {x: 0, y: 0}, this.headerGrp));
 
 	}
@@ -1096,10 +1159,17 @@ KIP.Objects.ProjectWindow.prototype.CreateGuideHeaders = function (noNumbers) {
 			this.headers.push(this.AddRectangle(month.start, this.viewY, w, h, "", this.headerGrp));
 
 			// create the text
-			this.fillProperty.color = "#FFF";
-
-			this.fontProperty.size = ( h / 2);
-			this.headers.push(this.AddText("", month.name.toUpperCase() + " " + month.year, month.start + (2 * this.unitWidth), this.viewY, "", {x: 0, y: 0}, this.headerGrp));
+			txt = KIP.Functions.CreateSimpleElement("", "monthHeader", month.name.toUpperCase() + " " + month.year[2] + month.year[3], "", "", this.textDiv);
+			pt = this.CalculateScreenCoordinates(month.start, this.viewY);
+			txt.style.left = pt.x + "px";
+			txt.style.top = pt.y = "px";
+			txt.style.width = w + "px";
+			txt.style.color = "#FFF";
+			txt.style.position = "absolute";
+		
+			
+			
+			this.headers.push(txt);
 		}
 	}
 };
@@ -1142,7 +1212,7 @@ KIP.Objects.ProjectWindow.prototype.Pan = function (amtX, amtY) {
 KIP.Objects.ProjectWindow.prototype.Sort = function (sortFunc, titleFunc) {
 	"use strict";
 	var i, y, h, lastH, headCb, that = this;
-
+	
 	// Clear any previous headers
 	this.itemHeaders.map (function (elem) {
 		if (!elem) return;
@@ -1192,6 +1262,7 @@ KIP.Objects.ProjectWindow.prototype.ClearUI = function () {
 	this.itemGrp.innerHTML = "";
 	this.eventGrp.innerHTML = "";
 	this.textDiv.innerHTML = "";
+	this.CreateGuideHeaders();
 };
 
 KIP.Objects.ProjectWindow.prototype.RemoveItem = function (item, refreshesLater) {
@@ -1370,8 +1441,15 @@ KIP.Objects.ProjectWindow.prototype.RefreshUI = function (fromPanZoom) {
 	this.rows = [];
 	h_y = 0;
 	for (i = 0; i < this.items.length; i += 1) {
-
+		this.rows.push(this.items[i]);
+		
+		if (this.items[i] === "spacer") {
+			continue;
+		}
+		
 		box = undefined;
+		this.items[i].row = i;
+		
 		
 		// Show or hide the title as appropriate
 		if (!this.showTitles) {
@@ -1422,6 +1500,9 @@ KIP.Objects.ProjectWindow.prototype.RefreshUI = function (fromPanZoom) {
 
 	// Refresh all of the appropriate elements
 	this.Draw();
+	
+	// If we have a listener, tell it that we refreshed
+	if (this.refreshNotify) this.refreshNotify(fromPanZoom);
 };
 
 KIP.Objects.ProjectWindow.prototype.AddItemHeader = function (idx, label) {
@@ -1444,6 +1525,8 @@ KIP.Objects.ProjectWindow.prototype.AddItemHeader = function (idx, label) {
 	};
 	
 };
+// ProjectPlan.AddImportantDate
+//----------------------------------------------------------------------------------------------------------------------
 /**
  * Adds an important date to our internal collection.
  */
@@ -1451,29 +1534,37 @@ KIP.Objects.ProjectWindow.prototype.AddImportantDate = function (startDate, lbl,
 	"use strict";
 	var diff, dir, dt, dIdx, tmp, cb, that = this;
 	
+	// Callback that sets the appropriate data on the created dates
 	cb = function (date, label, col, textCol, cat) {
-		that.importantDates[KIP.Functions.ShortDate(date)] = {
+		var shortDt;
+		shortDt = KIP.Functions.ShortDate(date);
+		
+		if (!that.importantDates[shortDt]) {
+			that.importantDates[shortDt] = [];
+		}
+		
+		// Push the date onto the array for this date
+		that.importantDates[shortDt].push({
 			date: new Date(date),
 			lbl: label,
 			color: col || "#C30",
 			textColor: textCol || "#FFF",
-			category: category
-		}
+			category: category,
+			shortDate: shortDt
+		});
 	};
 	
 	// Convert to a date if need be
 	if (!startDate.getFullYear) {
 		startDate = new Date(startDate);
 	}
-	
-	// Convert the end date if we have it & get the difference between it & the start date
-	diff = 0;
-	dir = 1;
-	
 	if (endDate && !endDate.getFullYear) {
 		endDate = new Date(endDate);
 	}
 	
+	// Get the difference between the end date & the start date
+	diff = 0;
+	dir = 1;
 	if (endDate) {
 		diff = KIP.Functions.DateDiff(endDate, startDate);
 		dir = (diff < 0) ? -1 : 1;
@@ -1485,6 +1576,7 @@ KIP.Objects.ProjectWindow.prototype.AddImportantDate = function (startDate, lbl,
 	tmp = new Date(startDate);
 	for (dIdx = 0; dIdx <= diff; dIdx += dir) {
 		dt = tmp;
+		
 		// Add to our important date array
 		cb(dt, lbl ,color, textColor, category);
 		
@@ -1706,11 +1798,31 @@ KIP.Objects.ProjectWindow.prototype.AddImportantDateCategory = function (catName
 	
 	// return the index this was added to
 	return idx;
-}
+};
 
-KIP.Objects.ProjectWindow.prototype.RemoveImportantDate = function (dt) {
+KIP.Objects.ProjectWindow.prototype.RemoveImportantDate = function (dt, idx) {
 	"use strict";
-	delete this.importantDates[dt];
+	if (idx) {
+		this.importantDates[dt].splice(idx,1);
+	} else {
+		delete this.importantDates[dt];
+	}
 	this.CreateGuidelines();
 	this.Draw();
-}
+};
+
+KIP.Objects.ProjectWindow.prototype.Jump = function (x, y) {
+	"use strict";
+	this.viewX = x || this.viewX;
+	this.viewY = y || this.viewY;
+	this.view = this.CreateView();
+	this.CreateGuidelines();
+	this.CreateView(true);
+};
+
+KIP.Objects.ProjectWindow.prototype.AfterDrawChildren = function () {
+	"use strict";
+	if (!this.textDiv.parentNode && this.parent) {
+		this.parent.appendChild(this.textDiv);
+	}
+};

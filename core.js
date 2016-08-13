@@ -35,7 +35,9 @@ if (!window.KIP) {
 		 * All globals that are necessary for this library
 		 * @namespace Globals
 		 */
-		Globals : {},
+		Globals : {
+      StylesAdded: {}
+    },
 
 		/**
 		 * All configurable options for the library
@@ -75,53 +77,56 @@ try {
  *
  * @return {HTMLElement} The created element, with all specified parameters included.P
  */
-KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children) {
-  var elem, a, c, child;
+KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children, parent) {
+  var obj;
 
-  elem = document.createElement("div");
+  obj = {};
+  obj.id = id;              // Set the element's ID
+  obj.type = "div";         // Set the type of element to create
+  obj.content = content;    // Set what the content of the element should be
+  obj.cls = cls;            // Set the appropriate CSS class for the element
+  obj.attr = attr;          // Set a list of attributes for the element
+  obj.children = children;  // Attach children to to the element
+  obj.parent = parent;      // Attach the created element to the appropriate parent
 
-  // Add the ID if we have it
-  if (id) {
-    elem.setAttribute("id", id);
-  }
+  // Use our standard function for creating elements
+  return KIP.Functions.CreateElement(obj);
+};
 
-  // Add the class if we have it
-  if (cls) {
-    elem.setAttribute("class", cls);
-  }
+KIP.Functions.CreateSimpleLabeledElement = function (id, cls, lbl, content, attr, children, parent, skipZero) {
+	"use strict";
+	var obj, cLbl, cContent;
+	if (content === undefined || content === null) return;
+	if ((typeof content === typeof "string") && (KIP.Functions.Trim(content).length === 0)) {
+		return;
+	}
+	if (skipZero && content === 0) { return; }
+	// Create the wrapper
+	obj = {};
+	obj.id = id;
+	obj.type = "div";
+	obj.cls = cls;
+	obj.attr = attr;
+	obj.children = children;
+	obj.parent = parent;
 
-  // Add the innerHTML if we have it
-  if (content) {
-    elem.innerHTML = content;
-  }
+	// Create the label
+	cLbl = {
+		cls: "lbl",
+		content: lbl,
+		type: "span"
+	};
 
-  // Loop through our list of attributes and set them too
-  for (a in attr) {
-    if (attr.hasOwnProperty(a)) {
-      if (!attr[a]) continue;
-			
-			if (attr[a].key) {
-				elem.setAttribute(attr[a].key, attr[a].val);
-			} else {
-				elem.setAttribute(a, attr[a]);
-			}
-      
-    }
-  }
+	// Create the content
+	cContent = {
+		cls: "content",
+		content: content,
+		type: "span"
+	};
 
-  // Loop through all of the children listed for this element
-  for (c in children) {
-    if (children.hasOwnProperty(c)) {
-			if (children[c].setAttribute) {
-				elem.appendChild(children[c]);
-			} else {
-				child = KIP.Functions.CreateElement(children[c]);
-				elem.appendChild(child);
-			}
-    }
-  }
+	obj.children = [cLbl, cContent];
 
-  return elem;
+	return KIP.Functions.CreateElement(obj);
 };
 
 // CreateElement
@@ -147,7 +152,7 @@ KIP.Functions.CreateSimpleElement = function (id, cls, content, attr, children) 
  * KIP.Functions.CreateElement( {id: "123", cls: "cssClass", attr: [{key: "width", val: 30}]});
  */
 KIP.Functions.CreateElement = function (obj) {
-  var elem, a, c, child, type;
+  var elem, a, c, child, type, selector;
 
   type = obj.type || "div";
   elem = document.createElement(type);
@@ -156,37 +161,43 @@ KIP.Functions.CreateElement = function (obj) {
     elem.setAttribute("id", obj.id);
   }
 
+  // Set the CSS class of the object
   if (obj.cls) {
-    elem.setAttribute("class", obj.cls);
+
+    // Check that the class is a string before setting it
+    if (typeof obj.cls === typeof "string") {
+      elem.setAttribute("class", obj.cls);
+
+    // If it's an object, we need to create the class(es) first
+    } else if (typeof obj.cls === typeof {}) {
+      for (selector in obj.cls) {
+        if (obj.cls.hasOwnProperty(selector)) {
+
+          // Create the CSS class using the specified parameters
+          KIP.Functions.CreateCSSClass(selector, obj.cls[selector]);
+
+          // Add the CSS class to the element itself
+          KIP.Functions.AddCSSClass(elem, selector);
+        }
+      }
+    }
+
   }
 
-  if (obj.before_content) {
+  // Set the first bit of content in the element (guaranteed to come before children)
+  if (obj.before_content || (obj.before_content === 0)) {
     elem.innerHTML = obj.before_content;
   }
 
   // Also check for just plain "Content"
-  if (obj.content) {
+  if (obj.content || (obj.content === 0)) {
     elem.innerHTML += obj.content;
   }
 
-  // Loop through all other attributes that we should be setting
-  for (a in obj.attr) {
-    if (obj.attr.hasOwnProperty(a)) {
-      if (!obj.attr[a]) continue;
-			
-			if (obj.attr[a].key) {
-				elem.setAttribute(obj.attr[a].key, obj.attr[a].val);
-			} else {
-				elem.setAttribute(a, obj.attr[a]);
-			}
-      
-    }
-  }
-
-  // Loop through all of the children listed for this element
+	// Loop through all of the children listed for this element
   for (c in obj.children) {
     if (obj.children.hasOwnProperty(c)) {
-      	
+
 			if (!obj.children[c]) continue;
 
 			if (obj.children[c].setAttribute) {
@@ -195,13 +206,43 @@ KIP.Functions.CreateElement = function (obj) {
 				child = KIP.Functions.CreateElement(obj.children[c]);
 				elem.appendChild(child);
 			}
-      
+
     }
   }
 
+  // Loop through all other attributes that we should be setting
+  for (a in obj.attr) {
+    if (obj.attr.hasOwnProperty(a)) {
+      if (!obj.attr[a]) continue;
+
+			if (obj.attr[a].key) {
+				if (obj.attr[a].key === "value") {
+					elem.value = obj.attr[a].val;
+				} else {
+					elem.setAttribute(obj.attr[a].key, obj.attr[a].val);
+				}
+
+			} else {
+				if (a === "value") {
+					elem.value = obj.attr[a];
+				} else {
+					elem.setAttribute(a, obj.attr[a]);
+				}
+			}
+
+    }
+  }
+
+
+
   // Add any after html
-  if (obj.after_content) {
+  if (obj.after_content || (obj.after_content === 0)) {
     elem.innerHTML += obj.after_content;
+  }
+
+  // Attach the object to a parent if appropriate
+  if (obj.parent) {
+    obj.parent.appendChild(elem);
   }
 
   return elem;
@@ -223,7 +264,7 @@ KIP.Functions.AddCSSClass = function (elem, newClass) {
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
 
-	if (KIP.Events.CSSChange) {
+	if (KIP.Events.CSSChange && elem.dispatchEvent) {
 		elem.dispatchEvent(KIP.Events.CSSChange);
 	}
 
@@ -259,7 +300,7 @@ KIP.Functions.RemoveCSSClass = function (elem, oldClass) {
 	// Handle Drawables being passed in
 	if (elem.Draw) elem = elem.div;
 
-	if (KIP.Events.CSSChange) {
+	if (KIP.Events.CSSChange && elem.dispatchEvent) {
 		elem.dispatchEvent(KIP.Events.CSSChange);
 	}
 
@@ -489,6 +530,7 @@ KIP.Functions.GlobalOffsetTop = function (elem, parent) {
  * @return {obj} Object with the keys "left" and "top"
  */
 KIP.Functions.GlobalOffsets = function (elem, parent) {
+	"use strict";
   return {
     left: KIP.Functions.GlobalOffsetLeft(elem, parent),
     top: KIP.Functions.GlobalOffsetTop(elem, parent)
@@ -512,7 +554,7 @@ KIP.Functions.auxGlobalOffset = function (elem, type, parent) {
     if (elem[type]) {
       offset += elem[type];
     }
-    elem = elem.parentNode;
+    elem = elem.offsetParent;
   }
 
   return offset;
@@ -932,7 +974,7 @@ KIP.Functions.CombineObjects = function (objA, objB, deep) {
 
   ret = {};
 
-  // Define a function that will pull in relevant details from 
+  // Define a function that will pull in relevant details from
   loopThru = function (array, retArr) {
     var key;
 
@@ -946,7 +988,7 @@ KIP.Functions.CombineObjects = function (objA, objB, deep) {
           tmp.prototype = Object.create(array[key].prototype);
           tmp = KIP.Functions.CombineObjects(tmp, array[key]);
           retArr[key] = tmp;
-        
+
         // Otherwise copy directly
         } else {
           retArr[key] = array[key];
@@ -961,4 +1003,37 @@ KIP.Functions.CombineObjects = function (objA, objB, deep) {
 
   // Return the appropriate output array
   return ret;
+}
+
+KIP.Functions.ReconcileOptions = function (options, defaults) {
+  "use strict";
+  var key, opt;
+
+  if (!options) options = {};
+
+  for (key in defaults) {
+    if (defaults.hasOwnProperty(key)) {
+
+      opt = options[key];
+      if ((opt === undefined) || (opt === null)) {
+        options[key] = defaults[key];
+      }
+    }
+  }
+
+  return options;
+}
+
+KIP.Functions.AddUnselectableClass = function () {
+  "use strict";
+  var cls;
+  cls = {
+    "user-select" : "none",
+    "-moz-user-select" : "none",
+    "-webkit-user-select" : "none",
+    "khtml-user-select" : "none",
+    "o-user-select" : "none"
+  };
+  KIP.Functions.CreateCSSClass(".unselectable", cls);
+
 }

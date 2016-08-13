@@ -11,11 +11,15 @@
 KIP.Objects.Shield = function (id, type) {
   "use strict";
   this.id = id;
-  this.entertainmentType = type || "plain";
+  this.type = type || "plain";
   this.addEntertainment = true;
 
   this.options = {
     animateSpeed : 300
+  };
+
+  if (type === "trivia") {
+    this.options.animateSpeed = 3000;
   }
   
   // Create the general div & use it to block events
@@ -28,7 +32,7 @@ KIP.Objects.Shield = function (id, type) {
   // Create the container that will hold whatever display we opt for
   this.container = KIP.Functions.CreateSimpleElement("shield" + this.id + "|container", "container");
   this.div.appendChild(this.container);
-}
+};
 
 // Inherit from Drawable
 KIP.Objects.Shield.prototype = Object.create(KIP.Objects.Drawable.prototype);
@@ -52,7 +56,8 @@ KIP.Objects.Shield.prototype.Show = function () {
     this.animate = window.setInterval(aFunc, this.options.animateSpeed);
   }
   this.Draw(document.body);
-}
+  this.showing = true;
+};
 
 // Shield.Hide
 //-------------------------------------------------
@@ -65,7 +70,8 @@ KIP.Objects.Shield.prototype.Hide = function () {
   if (this.animate) {
     window.clearInterval(this.animate);
   }
-}
+  this.showing = false;
+};
 
 // Shield.AddEntertainment
 //------------------------------------------------------------
@@ -74,13 +80,28 @@ KIP.Objects.Shield.prototype.Hide = function () {
  */
 KIP.Objects.Shield.prototype.AddEntertainment = function () {
   "use strict";
-  var div, frm, aFunc;
+  var div, frm, aFunc, cHead, cText;
   frm = 0;
 
   switch(this.type) {
 
     // Knowledge: fun facts
     case "trvia":
+      div = KIP.Functions.CreateSimpleElement("", "trivia");
+      cHead = KIP.Functions.CreateSimpleElement("", "header", "", "", "", div);
+      cText = KIP.Functions.CreateSimpleElement("", "text", "", "", "", div);
+      
+      this.animateFunc = aFunc = function () {
+
+        // Grab the appropriate frame
+        frm += 1;
+        frm %= this.trivia.length;
+
+        // Display the fact
+        cHead.innerHTML = this.trivia[frm].header;
+        cText.innerHTML = this.trivia[frm].text;
+      };
+
       break;
 
     // Game : keyboard DDR
@@ -113,17 +134,41 @@ KIP.Objects.Shield.prototype.AddEntertainment = function () {
             break;
         }
         div.innerHTML = "Loading" + s;
-      }
-
-      // Track the animation so we can remove it as appropriate
-      this.animate = window.setInterval(aFunc, this.options.animateSpeed);
+      };
       break;
+  }
+
+  // Track the animation so we can remove it as appropriate
+  if (aFunc) {
+    this.animate = window.setInterval(aFunc, this.options.animateSpeed);
   }
 
   // Actually add the entertainment we have created
   this.container.appendChild(div);
   this.addEntertainment = false;
-}
+};
+
+// Shield.AddTrivia
+//-----------------------------------------------------------------
+/**
+ * Adds a fact to the array of facts to display while loading
+ * @param {string} header - The text to display above the actual trivia (e.g., "Did you know" or "Fun fact!")
+ * @param {string} text - The actual text to display as the trivia element
+ * @param {number} [timing] - How long this piece of trivia should display. If not specified, defaults to the triviaTiming option.
+ */
+KIP.Objects.Shield.prototype.AddTrivia = function (header, text, timing) {
+  "use strict";
+
+  // Create our trivia array if needed
+  if (!this.trivia) this.trivia = [];
+
+  // Add the trivia to the array of data
+  this.trivia.push({
+    header: header,
+    text: text,
+    timing: (timing || this.options.animateSpeed)
+  });
+};
 
 // Shield.AddStyles
 //-----------------------------------------------------
@@ -133,6 +178,7 @@ KIP.Objects.Shield.prototype.AddEntertainment = function () {
 KIP.Objects.Shield.prototype.AddStyles = function () {
   "use strict";
   var cls;
+
   if (KIP.Globals.AddedShieldStyles) return;
 
   // ====== SHIELD STYLES ====== //
@@ -144,6 +190,8 @@ KIP.Objects.Shield.prototype.AddStyles = function () {
     "width": "100%",
     "height" : "100%"
   };
+
+  // 
   KIP.Functions.CreateCSSClass(".shield", cls);
 
   // ====== CONTAINER STYLES ===== //
@@ -165,4 +213,4 @@ KIP.Objects.Shield.prototype.AddStyles = function () {
   };
   KIP.Functions.CreateCSSClass(".shield .plain", cls);
 
-}
+};

@@ -122,9 +122,9 @@ KIP.Functions.InputDateFmt = function (dt) {
 	if (m < 10) m = "0" + m;
 	
 	d = parseInt(dt.getDate(), 10);
-	if (d < 10) d = "0" + d
+	if (d < 10) d = "0" + d;
 	return (dt.getFullYear() + "-" + m + "-" + d);
-}
+};
 
 // InputToDate
 //-------------------------------------------
@@ -138,7 +138,7 @@ KIP.Functions.InputToDate = function (iDt) {
 	arr = iDt.split("-");
 
 	return new Date(+arr[0], +arr[1] - 1, +arr[2]);
-}
+};
 
 /**
  * Gets the display string of the time in a short format (HH:MM)

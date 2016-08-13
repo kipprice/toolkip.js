@@ -151,7 +151,7 @@ KIP.Functions.DegreesToRadians = function (deg) {
 	return result;
 }
 
-KIP.Functions.Contained = function (pt, rect) {
+KIP.Functions.IsPointContained = function (pt, rect) {
 	"use strict";
 	if (rect.bottom || rect.top || rect.left || rect.right) {
 		if (pt.x < rect.left) return false;
@@ -167,3 +167,44 @@ KIP.Functions.Contained = function (pt, rect) {
 	
 	return true;
 }
+
+KIP.Functions.IsWithin = function (pt, min, max, nonInclusive) {
+	"use strict";
+	if (nonInclusive) return (pt < max && pt > min);
+	return (pt <= max && pt >= min)
+}
+
+
+KIP.Functions.IsRectContained = function (rect, bounds, irregular) {
+	"use strict";
+	if (!KIP.Functions.IsPointContained(rect[0], bounds)) return false;
+	if (!KIP.Functions.IsPointContained(rect[2], bounds)) return false;
+
+	if (irregular) {
+		if (!KIP.Functions.IsPointContained(rect[1], bounds)) return false;
+		if (!KIP.Functions.IsPointContained(rect[3], bounds)) return false;
+	}
+
+	return true;
+}
+
+KIP.Functions.IsElementContained = function (elem, container) {
+	
+};
+
+KIP.Functions.DoElementsOverlap = function (elem1, elem2) {
+	"use strict";
+	var rect1, rect2;
+	
+	rect1 = elem1.getBoundingClientRect();
+	rect2 = elem2.getBoundingClientRect();
+	
+	if (rect1.left > rect2.left && rect1.left < (rect2.width + rect2.left)) return true;
+	if (rect2.left > rect1.left && rect2.left < (rect1.width + rect1.left)) return true;
+	
+	if (rect1.top > rect2.top && rect1.top < (rect2.height + rect2.top)) return true;
+	if (rect2.top > rect1.top && rect2.top < (rect1.height + rect1.top)) return true;
+	
+	return false;
+	
+};

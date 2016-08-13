@@ -16,7 +16,7 @@
  *
  * @returns {SVGElement} The SVG element that was created
  */
-KIP.Functions.CreateSVG = function (id, width, height, view, content, noAspect) {
+KIP.Functions.CreateSVG = function (id, width, height, view, content, aspect) {
 	"use strict";
 	try {
 		// Quit if we don't have an appropriate ID
@@ -36,9 +36,7 @@ KIP.Functions.CreateSVG = function (id, width, height, view, content, noAspect) 
 		if (content) svg.innerHTML = content;
 
 		// Set a default for the aspect ratio
-		if (!noAspect) {
-			svg.setAttribute("preserveAspectRatio", "xMinYMin meet");
-		}
+		svg.setAttribute("preserveAspectRatio", aspect || "xMinYMin meet");
 
 		return svg;
 	} catch (e) {

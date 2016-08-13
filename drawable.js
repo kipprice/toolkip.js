@@ -15,6 +15,7 @@
  *@param {string} content - The content that should be applied to this div
  */
 KIP.Objects.Drawable = function (id, cls, content) {
+	"use strict";
   this.div = KIP.Functions.CreateSimpleElement(id, cls, content);
   this.children = [];
   this.elderSiblings = [];
@@ -181,7 +182,7 @@ KIP.Objects.Drawable.prototype.RemoveSiblingByIdx = function (idx, before) {
  */
 KIP.Objects.Drawable.prototype.Draw = function (parent, noErase, iBefore) {
   "use strict";
-  var i, elem, sibling, that = this;
+  var i, elem, sibling,  that = this;
 
   // Quit if something went wrong and there is no longer a div element
   if (!this.div) return;
@@ -207,6 +208,11 @@ KIP.Objects.Drawable.prototype.Draw = function (parent, noErase, iBefore) {
 
   // Remove the div that exists, if it does
   if (this.div.parentNode && !noErase) {
+		
+		if (!iBefore) {
+			iBefore = this.div.nextSibling;
+		}
+		
     this.div.parentNode.removeChild(this.div);
   }
 
@@ -214,6 +220,7 @@ KIP.Objects.Drawable.prototype.Draw = function (parent, noErase, iBefore) {
   if (iBefore) {
     this.parent.insertBefore(this.div, iBefore);
   } else {
+		
     this.parent.appendChild(this.div);
   }
 

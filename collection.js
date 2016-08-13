@@ -11,6 +11,7 @@ KIP.Objects.Collection = function () {
 	this.data = [];
 	this.backData = {};
 	this.sortedData;
+	this.loopIdx = -1;
 };
 
 // Collection.Length
@@ -112,6 +113,13 @@ KIP.Objects.Collection.prototype.RemoveElement = function (key, idx) {
 			if (bIdx > idx) {
 				this.backData[i] -= 1;
 			}
+		}
+	}
+	
+	// Loop through sorted data to remove
+	for (i = (this.sortedData.length - 1); i >= 0; i-= 1) {
+		if (this.sortedData[i].key === key) {
+			this.sortedData.splice(i,1);
 		}
 	}
 	
@@ -251,19 +259,20 @@ KIP.Objects.Collection.prototype.ReassignBackData = function () {
  */
 KIP.Objects.Collection.prototype.MergeCollection = function (coll, useOld) {
 	"use strict";
-	var key, idx, nIdx;
+	var key, val, idx, nIdx;
 	
 	for (idx = 0; idx < coll.data.length; idx += 1) {
-		key = coll.data[idx];
+		key = coll.data[idx].key;
 		
 		// If we already have some data under that key, either override or ignore it
-		if (this.backData.hasOwnProperty(key)) {
+		if (key in this.backData) {
 			if (useOld) continue;
 			this.data[this.backData[key]] = coll.data[idx];
 			
 		// Otherwise, add the data to our collection instead
 		} else {
 			nIdx = this.data.push(coll.data[idx]);
+			nIdx -= 1;
 			this.backData[key] = nIdx;
 		}
 	}
@@ -325,10 +334,51 @@ KIP.Objects.Collection.prototype.Sort = function (func) {
 	copy = this.data.slice();
 	
 	// Sort the copy
-	copy = copy.sort(func);
+	copy = copy.sort(function (a, b) {
+		return func(a.value, b.value);
+	});
 
 	this.sortedData = copy;
 	
 	// Return the copied array
 	return copy;
+};
+
+
+KIP.Objects.Collection.prototype.GetSortedData = function () {
+	"use strict";
+	if (this.sortedData) return this.sortedData.slice();
+	return this.data.slice();
+};
+
+KIP.Objects.Collection.prototype.HasNext = function () {
+	"use strict";
+	
+	return (this.loopIdx < (this.data.length  - 1));
+};
+
+KIP.Objects.Collection.prototype.Next = function () {
+	"use strict";
+	
+	this.loopIdx ++;
+	
+	// Return null if out of bounds
+	if (this.loopIdx >= this.data.length) return null;
+	
+	// Otherwise return either the sorted value or the unsorted value
+	if (this.sortedData) {
+		return this.sortedData[this.loopIdx];
+	} else {
+		return this.data[this.loopIdx];
+	}
+};
+
+KIP.Objects.Collection.prototype.StartLoop = function () {
+	"use strict";
+	this.ResetLoop();
+};
+
+KIP.Objects.Collection.prototype.ResetLoop = function () {
+	"use strict";
+	this.loopIdx = -1;
 };
