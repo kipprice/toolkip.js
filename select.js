@@ -1,8 +1,11 @@
 /* globals KIP */
 
+// Select
+//------------------------------------
 /**
  * Creates a selec-like element using the Drawable framework for more adaptability in styles and design
  * @param {string} id - The unique identifier for this select element
+ * @class Select
  */
 KIP.Objects.Select = function (id) {
 	"use strict";
@@ -33,8 +36,14 @@ KIP.Objects.Select = function (id) {
 	this.AddListeners();
 };
 
+// Inherit from drawable
 KIP.Objects.Select.prototype = Object.create(KIP.Objects.Drawable.prototype);
 
+// Select.AddListeners
+//--------------------------------------------------------
+/**
+ * Adds event listeners to the select box
+ */
 KIP.Objects.Select.prototype.AddListeners = function () {
 	"use strict";
 	var that;
@@ -71,6 +80,11 @@ KIP.Objects.Select.prototype.AddListeners = function () {
 
 };
 
+// Select.Dropdown
+//----------------------------------------------------------
+/**
+ * Shows or hides the dropdown box for the select field
+ */
 KIP.Objects.Select.prototype.Dropdown = function (retract) {
 	"use strict";
 	
@@ -85,6 +99,11 @@ KIP.Objects.Select.prototype.Dropdown = function (retract) {
 	}
 };
 
+// Select.AddData
+//------------------------------------------------------
+/**
+ * Adds data to show in the select dropdown
+ */
 KIP.Objects.Select.prototype.AddData = function (obj) {
 	"use strict";
 	var key, opt, func, that, i;
@@ -126,6 +145,11 @@ KIP.Objects.Select.prototype.AddData = function (obj) {
 	
 };
 
+// Select.Filter
+//--------------------------------------------------
+/**
+ * Remove elements that should not be displayed with the current text
+ */
 KIP.Objects.Select.prototype.Filter = function () {
 	"use strict";
 	var i, k, v, str, idx;
@@ -165,6 +189,11 @@ KIP.Objects.Select.prototype.Filter = function () {
 	
 };
 
+// Select._Hilite
+//------------------------------------------------------
+/**
+ * Hilites an element in the dropdown of this field
+ */
 KIP.Objects.Select.prototype._Hilite = function (dir) {
 	"use strict";
 	var idx, cnt, done;
@@ -205,14 +234,29 @@ KIP.Objects.Select.prototype._Hilite = function (dir) {
 	this.selectedData = idx;
 };
 
+// Select.HiliteNext
+//------------------------------------------------------
+/**
+ * Hilites the next available option
+ */
 KIP.Objects.Select.prototype.HiliteNext = function () {
 	return this._Hilite(1);
 };
 
+// Select.HilitePrevious
+//----------------------------------------------------------
+/**
+ * Hilites the previous available option
+ */
 KIP.Objects.Select.prototype.HilitePrevious = function () {
 	return this._Hilite(-1);
 };
 
+// Select.Select
+//------------------------------------------------------
+/**
+ * Selects an option
+ */
 KIP.Objects.Select.prototype.Select = function (data) {
 	"use strict";
 	var that = this;
@@ -227,6 +271,11 @@ KIP.Objects.Select.prototype.Select = function (data) {
 	window.setTimeout(function () {that.Dropdown(true);}, 100);
 };
 
+// Select.Validate
+//----------------------------------------------------
+/**
+ * Validates that the user has made a valid choice
+ */
 KIP.Objects.Select.prototype.Validate = function () {
 	"use strict";
 	var str, idx;

@@ -215,25 +215,6 @@ KIP.Objects.Collection.prototype.GetElementKey = function (idx) {
 	return this.data[idx].key;
 };
 
-// Collection.Sort
-//-----------------------------------------------------------
-/**
- * Sorts our data collection by a given sort function
- * @param {function} sortFunc - The sorting function to use
- * @returns {Array} Our newly sorted data array
- */
-KIP.Objects.Collection.prototype.Sort = function (sortFunc) {
-	"use strict";
-
-	// Sort the data
-	this.data = this.data.sort(sortFunc);
-
-	// Reassign our back values
-	this.ReassignBackData();
-
-	return this.data;
-};
-
 // Collection.ReassignBackData
 //-----------------------------------------------------------------
 /**
@@ -345,18 +326,34 @@ KIP.Objects.Collection.prototype.Sort = function (func) {
 };
 
 
+
+// Collection.GetSortedData
+//-------------------------------------------------------------
+/**
+ * Gets the sorted data contained within this collection
+ */
 KIP.Objects.Collection.prototype.GetSortedData = function () {
 	"use strict";
 	if (this.sortedData) return this.sortedData.slice();
 	return this.data.slice();
 };
 
+// Collection.HasNext
+//-------------------------------------------------------
+/**
+ * Determines if there is another element in this collection, when looping over elements
+ */
 KIP.Objects.Collection.prototype.HasNext = function () {
 	"use strict";
 	
 	return (this.loopIdx < (this.data.length  - 1));
 };
 
+// Collection.Next
+//----------------------------------------------------
+/**
+ * Grabs the next element in this collection. If there is sorted data, uses the sorted order. Otherwise, FIFO.
+ */
 KIP.Objects.Collection.prototype.Next = function () {
 	"use strict";
 	
@@ -373,11 +370,22 @@ KIP.Objects.Collection.prototype.Next = function () {
 	}
 };
 
+// Collection.StartLoop
+//---------------------------------------------------------
+/**
+ * Synonym for ResetLoop. Resets loop counters so we can loop over elements
+ * in this collection.
+ */
 KIP.Objects.Collection.prototype.StartLoop = function () {
 	"use strict";
 	this.ResetLoop();
 };
 
+// Collection.ResetLoop
+//--------------------------------------------------------
+/**
+ * Resets loop counters so we can loop over elements in this collection.
+ */
 KIP.Objects.Collection.prototype.ResetLoop = function () {
 	"use strict";
 	this.loopIdx = -1;
